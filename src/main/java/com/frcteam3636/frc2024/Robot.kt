@@ -3,6 +3,7 @@ package com.frcteam3636.frc2024
 import BuildConstants
 import com.ctre.phoenix6.StatusSignal
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
+import com.frcteam3636.frc2024.subsystems.intake.Intake
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
@@ -60,6 +61,11 @@ object Robot : LoggedRobot() {
         configureAutos()
         configureBindings()
         configureDashboard()
+
+        Intake.register()
+
+        //configure bindings
+        configureBindings()
     }
 
     /** Start logging or pull replay logs from a file */
@@ -122,6 +128,21 @@ object Robot : LoggedRobot() {
             println("Zeroing gyro.")
             Drivetrain.zeroGyro()
         }).ignoringDisable(true))
+
+        //Intake
+        controller.rightBumper()
+            .debounce(0.150)
+            .whileTrue(
+                Intake.intake()
+            )
+
+        //Outtake
+        controller.leftBumper()
+            .whileTrue(
+                Commands.parallel(
+                    Intake.outtake(),
+                )
+            )
     }
 
     /** Add data to the driver station dashboard. */
