@@ -8,14 +8,14 @@ interface IndexerIO{
     class IndexerInputs : LoggableInputs {
         var indexerVelocity = Rotation2d()
         var indexerCurrent: Double = 0.0
-        var isSpinning: Boolean = false
+        var isSpinningBalloon: Boolean = false
         var hasBalloon: Boolean = false
         var balloonColor = null
 
         override fun toLog(table: LogTable?) {
             table?.put("Indexer Wheel Velocity", indexerVelocity)
             table?.put("Indexer Wheel Current", indexerCurrent)
-            table?.put("Is spinning", isSpinning)
+            table?.put("Is spinning", isSpinningBalloon)
             table?.put("Has balloon", hasBalloon)
             table?.put("Balloon Color", balloonColor)
         }
@@ -23,7 +23,7 @@ interface IndexerIO{
         override fun fromLog(table: LogTable) {
             indexerVelocity = table.get("Indexer Velocity", indexerVelocity)!![0]
             indexerCurrent = table.get("Indexer Wheel Current", indexerCurrent)
-            isSpinning = table.get("Is spinning", isSpinning)
+            isSpinningBalloon = table.get("Is spinning", isSpinningBalloon)
             hasBalloon = table.get("Has balloon", hasBalloon)
             balloonColor = table.get("Balloon Color", balloonColor)
         }
@@ -46,7 +46,7 @@ class IndexerIOReal: IndexerIO{
     override fun updateInputs(inputs: IndexerIO.IndexerInputs) {
         inputs.indexerVelocity = Rotation2d(indexerWheel.encoder.velocity)
         inputs.indexerCurrent = indexerWheel.outputCurrent
-        inputs.isSpinning = indexerWheel.
+        inputs.isSpinningBalloon = colorSensor.get()
         inputs.hasBalloon = colorSensor.get()
         inputs.balloonColor = colorSensor.get()
     }
