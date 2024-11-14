@@ -49,6 +49,7 @@ object Drivetrain : Subsystem, Sendable {
     private val io = when (Robot.model) {
         Robot.Model.SIMULATION -> DrivetrainIOSim()
         Robot.Model.COMPETITION -> DrivetrainIOReal.fromKrakenSwerve()
+        Robot.Model.PROTOTYPE -> DrivetrainIOReal.fromNeoSwerve()
     }
     val inputs = DrivetrainIO.Inputs()
 
@@ -84,10 +85,7 @@ object Drivetrain : Subsystem, Sendable {
 
     init {
         Pathfinding.setPathfinder(
-            when (Robot.model) {
-                Robot.Model.SIMULATION -> LocalADStarAK()
-                Robot.Model.COMPETITION -> RemoteADStarAK()
-            }
+            LocalADStarAK()
         )
 
         AutoBuilder.configureHolonomic(
@@ -354,6 +352,30 @@ object Drivetrain : Subsystem, Sendable {
                 backLeft =
                 Pair(
                     CTREMotorControllerId.BackLeftDrivingMotor,
+                    REVMotorControllerId.BackLeftTurningMotor
+                ),
+            )
+
+        internal val MODULE_CAN_IDS_PRACTICE =
+            PerCorner(
+                frontLeft =
+                Pair(
+                    REVMotorControllerId.FrontLeftDrivingMotor,
+                    REVMotorControllerId.FrontLeftTurningMotor
+                ),
+                frontRight =
+                Pair(
+                    REVMotorControllerId.FrontRightDrivingMotor,
+                    REVMotorControllerId.FrontRightTurningMotor
+                ),
+                backRight =
+                Pair(
+                    REVMotorControllerId.BackRightDrivingMotor,
+                    REVMotorControllerId.BackRightTurningMotor
+                ),
+                backLeft =
+                Pair(
+                    REVMotorControllerId.BackLeftDrivingMotor,
                     REVMotorControllerId.BackLeftTurningMotor
                 ),
             )

@@ -1,7 +1,5 @@
 package com.frcteam3636.frc2024
 
-import BuildConstants
-import com.ctre.phoenix6.SignalLogger
 import com.ctre.phoenix6.StatusSignal
 import com.frcteam3636.frc2024.subsystems.arm.Arm
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
@@ -73,9 +71,11 @@ object Robot : LoggedRobot() {
 
     /** Start logging or pull replay logs from a file */
     private fun configureAdvantageKit() {
-        Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA)
+        Logger.recordMetadata("Git SHA", BuildConstants.GIT_SHA)
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE)
         Logger.recordMetadata("Model", model.name)
+        Logger.recordMetadata("Git Dirty", BuildConstants.DIRTY.toString())
+        Logger.recordMetadata("Git Branch", BuildConstants.GIT_BRANCH)
 
         if (isReal()) {
             Logger.addDataReceiver(WPILOGWriter()) // Log to a USB stick
@@ -211,7 +211,7 @@ object Robot : LoggedRobot() {
 
     /** A model of robot, depending on where we're deployed to. */
     enum class Model {
-        SIMULATION, COMPETITION,
+        SIMULATION, COMPETITION, PROTOTYPE
     }
 
     /** The model of this robot. */
@@ -220,6 +220,7 @@ object Robot : LoggedRobot() {
     } else {
         when (val key = Preferences.getString("Model", "competition")) {
             "competition" -> Model.COMPETITION
+            "prototype" -> Model.PROTOTYPE
             else -> throw Exception("invalid model found in preferences: $key")
         }
     }

@@ -9,6 +9,7 @@ object Intake: Subsystem {
     private var io: IntakeIO = when (Robot.model) {
         Robot.Model.SIMULATION -> IntakeIO.IntakeIOSim()
         Robot.Model.COMPETITION -> IntakeIO.IntakeIOReal()
+        Robot.Model.PROTOTYPE -> IntakeIO.IntakeIOSim()
     }
 
     var inputs = IntakeIO.IntakeInputs()
