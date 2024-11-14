@@ -14,7 +14,7 @@ object Wrist: Subsystem {
     var inputs = IntakeIO.IntakeInputs()
 
     override fun periodic() {
-        Logger.processInputs("Intake", inputs)
+        Logger.processInputs("Wrist", inputs)
         //the wrist should always be parallel to the ground
         io.pivotToAndStop(Radians.zero()) //use position variable from arm
     }

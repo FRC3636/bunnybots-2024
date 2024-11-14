@@ -175,7 +175,7 @@ object Robot : LoggedRobot() {
 
     /** A model of robot, depending on where we're deployed to. */
     enum class Model {
-        SIMULATION, COMPETITION,
+        SIMULATION, COMPETITION, PROTOTYPE
     }
 
     /** The model of this robot. */
@@ -184,6 +184,7 @@ object Robot : LoggedRobot() {
     } else {
         when (val key = Preferences.getString("Model", "competition")) {
             "competition" -> Model.COMPETITION
+            "prototype" -> Model.PROTOTYPE
             else -> throw Exception("invalid model found in preferences: $key")
         }
     }

@@ -77,6 +77,16 @@ class DrivetrainIOReal(override val modules: PerCorner<out SwerveModule>) : Driv
                             position.rotation
                         )
                     })
+
+        fun fromNeoSwerve() =
+            DrivetrainIOReal(Drivetrain.Constants.MODULE_POSITIONS.zip(Drivetrain.Constants.MODULE_CAN_IDS_PRACTICE).map { (position, ids) ->
+                val (driveId, turnId) = ids
+                MAXSwerveModule(
+                    DrivingSparkMAX(driveId),
+                    turnId,
+                    position.rotation
+                )
+            })
     }
 }
 
