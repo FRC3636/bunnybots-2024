@@ -53,14 +53,10 @@ interface WristIO {
     class WristIOKraken: WristIO {
         private val wristMotor = TalonFX(CTREMotorControllerId.WristMotor)
 
-        private val absoluteEncoder = DutyCycleEncoder(DigitalInput(7)).apply {
-            distancePerRotation = SENSOR_TO_PIVOT_RATIO
-        }
+        private val absoluteEncoder = DutyCycleEncoder(DigitalInput(7))
 
         private val rawAbsoluteEncoderPosition
             get() = Rotation2d.fromRotations(-absoluteEncoder.absolutePosition)
-
-        private var zeroOffset: Double = ABSOLUTE_ENCODER_OFFSET
 
         init {
             val config = TalonFXConfiguration().apply {
@@ -91,14 +87,12 @@ interface WristIO {
             wristMotor.configurator.apply(
                 config
             )
-
-            wristMotor.setPosition(HARDSTOP_OFFSET.`in`(Rotations))
         }
 
         override fun updateInputs(inputs: Inputs) {
-            inputs.position = Radians.zero()
-            inputs.velocity = RadiansPerSecond.zero()
-            inputs.voltage = Volts.zero()
+            inputs.position = Rotations.of(wristMotor.position.value)
+            inputs.velocity = RotationsPerSecond.of(wristMotor.velocity.value)
+            inputs.voltage = Volts.of(wristMotor.motorVoltage.value)
         }
 
         override fun pivotToAndStop(position: Measure<Angle>) {
@@ -112,8 +106,6 @@ interface WristIO {
         }
 
         internal companion object Constants {
-            private const val SENSOR_TO_PIVOT_RATIO = 0.0
-            private const val ABSOLUTE_ENCODER_OFFSET = 0.0
             private const val GEAR_RATIO = 0.0
             val PID_GAINS = PIDGains(120.0, 0.0, 100.0) //placeholders
             val FF_GAINS = MotorFFGains(7.8, 0.0, 0.0) //placeholders
@@ -121,7 +113,6 @@ interface WristIO {
             private const val PROFILE_ACCELERATION = 0.0
             private const val PROFILE_JERK = 0.0
             private const val PROFILE_VELOCITY = 0.0
-            private val HARDSTOP_OFFSET = Radians.zero()
         }
     }
 }
