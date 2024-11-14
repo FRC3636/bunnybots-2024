@@ -70,9 +70,11 @@ object Robot : LoggedRobot() {
 
     /** Start logging or pull replay logs from a file */
     private fun configureAdvantageKit() {
-        Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA)
+        Logger.recordMetadata("Git SHA", BuildConstants.GIT_SHA)
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE)
         Logger.recordMetadata("Model", model.name)
+        Logger.recordMetadata("Git Dirty", BuildConstants.DIRTY.toString())
+        Logger.recordMetadata("Git Branch", BuildConstants.GIT_BRANCH)
 
         if (isReal()) {
             Logger.addDataReceiver(WPILOGWriter()) // Log to a USB stick
