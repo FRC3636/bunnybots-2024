@@ -72,6 +72,7 @@ object Robot : LoggedRobot() {
     private fun configureAdvantageKit() {
         Logger.recordMetadata("GitSHA", BuildConstants.GIT_SHA)
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE)
+        Logger.recordMetadata("Dirty", (BuildConstants.DIRTY == 1).toString())
         Logger.recordMetadata("Model", model.name)
 
         if (isReal()) {
