@@ -42,7 +42,7 @@ tasks.register('checkAkitInstall', JavaExec) {
 }
 compileJava.finalizedBy checkAkitInstall
 
-project.compileJava.dependsOn(createVersionFile)
+project.assemble.dependsOn(createVersionFile)
 gversion {
     srcDir = "src/main/java/"
     classPackage = ""
