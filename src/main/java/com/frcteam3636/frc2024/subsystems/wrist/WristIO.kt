@@ -48,7 +48,7 @@ interface WristIO {
     }
     fun updateInputs(inputs: Inputs)
 
-    fun pivotToAndStop(position: Rotation2d)
+    fun pivotToAndStop(position: Measure<Angle>)
 
     class WristIOKraken: WristIO {
         private val wristMotor = TalonFX(CTREMotorControllerId.WristMotor)
@@ -101,12 +101,12 @@ interface WristIO {
             inputs.voltage = Volts.zero()
         }
 
-        override fun pivotToAndStop(position: Rotation2d) {
+        override fun pivotToAndStop(position: Measure<Angle>) {
             Logger.recordOutput("Shooter/Pivot/Position Setpoint", position)
 
             val wristControl = MotionMagicTorqueCurrentFOC(0.0).apply {
                 Slot = 0
-                Position = position.rotations
+                Position = position.`in`(Rotations)
             }
             wristMotor.setControl(wristControl)
         }
