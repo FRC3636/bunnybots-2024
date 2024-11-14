@@ -2,6 +2,7 @@ package com.frcteam3636.frc2024
 
 import BuildConstants
 import com.ctre.phoenix6.StatusSignal
+import com.frcteam3636.frc2024.subsystems.arm.Arm
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.frc2024.subsystems.intake.Intake
 import edu.wpi.first.hal.FRCNetComm.tInstances
@@ -142,6 +143,22 @@ object Robot : LoggedRobot() {
                 Commands.parallel(
                     Intake.outtake(),
                 )
+            )
+
+        //Arm positions
+        controller.a()
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.Stowed)
+            )
+
+        controller.x()
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.PickUp)
+            )
+
+        controller.y()
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.Lower)
             )
     }
 

@@ -1,27 +1,23 @@
 package com.frcteam3636.frc2024.subsystems.arm
 import com.ctre.phoenix6.configs.TalonFXConfiguration
-import com.ctre.phoenix6.configs.TalonFXConfigurator
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC
 import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
-import edu.wpi.first.math.geometry.Rotation2d
-import org.littletonrobotics.junction.LogTable
-import org.littletonrobotics.junction.inputs.LoggableInputs
-import com.frcteam3636.frc2024.CANSparkFlex
 import com.frcteam3636.frc2024.CTREMotorControllerId
-import com.frcteam3636.frc2024.REVMotorControllerId
 import com.frcteam3636.frc2024.TalonFX
-import com.revrobotics.CANSparkLowLevel
-import edu.wpi.first.math.trajectory.TrapezoidProfile
-import edu.wpi.first.networktables.NetworkTableInstance
+import com.frcteam3636.frc2024.utils.math.MotorFFGains
+import com.frcteam3636.frc2024.utils.math.PIDGains
+import com.frcteam3636.frc2024.utils.math.motorFFGains
+import com.frcteam3636.frc2024.utils.math.pidGains
 import edu.wpi.first.units.Angle
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Units.*
-import edu.wpi.first.units.Units.Rotations
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DutyCycleEncoder
+import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
-
+import org.littletonrobotics.junction.inputs.LoggableInputs
 
 
 interface ArmIO{
@@ -29,8 +25,9 @@ interface ArmIO{
 
             var rightPosition = Radians.zero()
             var leftPosition = Radians.zero()
+            var position = Radians.zero()
 
-            var absoluteEncoderPostion = Radians.zero()
+            var absoluteEncoderPosition = Radians.zero()
 
             var rightCurrent = Volts.zero()
             var leftCurrent = Volts.zero()
@@ -82,9 +79,10 @@ interface ArmIO{
         private val absoluteEncoder = DutyCycleEncoder(DigitalInput(7))
 
         override fun updateInputs(inputs: ArmIO.ArmInputs) {
+            inputs.position = Rotations.of(absoluteEncoder.absolutePosition)
             inputs.absoluteEncoderConnected = absoluteEncoder.isConnected
 
-            inputs.absoluteEncoderPostion = Rotations.of(absoluteEncoder.absolutePosition)
+            inputs.absoluteEncoderPosition = Rotations.of(absoluteEncoder.absolutePosition)
 
             inputs.leftPosition = Rotations.of(leftMotor.position.value)
             inputs.leftVelocity = RotationsPerSecond.of(leftMotor.velocity.value)
@@ -95,14 +93,19 @@ interface ArmIO{
 
             inputs.rightCurrent = Volts.of(leftMotor.motorVoltage.value)
 
+            leftMotor.setPosition(inputs.absoluteEncoderPosition.`in`(Rotations))
+            rightMotor.setPosition(inputs.absoluteEncoderPosition.`in`(Rotations))
         }
 
         override fun setPosition(position: Measure<Angle>) {
             Logger.recordOutput("Shooter/Pivot/Position Setpoint", position)
 
-            val leftControl = 
+            val leftControl = MotionMagicTorqueCurrentFOC(0.0).apply {
+                Slot = 0
+                Position = position.`in`(Rotations)
+            }
+            leftMotor.setControl(leftControl)
 
-            TODO("Not yet implemented")
         }
         init {
             val config = TalonFXConfiguration().apply {
@@ -136,12 +139,17 @@ interface ArmIO{
 
             config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive
             rightMotor.configurator.apply(config)
-
-            leftMotor.setPosition(HARDSTOP_OFFSET.rotations)
-            rightMotor.setPosition(HARDSTOP_OFFSET.rotations)
         }
 
 
+        internal companion object Constants {
+            private const val GEAR_RATIO = 0.0
+            val PID_GAINS = PIDGains(120.0, 0.0, 100.0) //placeholders
+            val FF_GAINS = MotorFFGains(7.8, 0.0, 0.0) //placeholders
+            private const val GRAVITY_GAIN = 0.0
+            private const val PROFILE_ACCELERATION = 0.0
+            private const val PROFILE_JERK = 0.0
+            private const val PROFILE_VELOCITY = 0.0
         }
 
     }
