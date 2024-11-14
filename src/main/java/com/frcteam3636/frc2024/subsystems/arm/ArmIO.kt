@@ -1,6 +1,7 @@
 package com.frcteam3636.frc2024.subsystems.arm
 import com.ctre.phoenix6.configs.TalonFXConfiguration
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC
+import com.ctre.phoenix6.controls.VoltageOut
 import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
@@ -13,6 +14,7 @@ import com.frcteam3636.frc2024.utils.math.pidGains
 import edu.wpi.first.units.Angle
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Units.*
+import edu.wpi.first.units.Voltage
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DutyCycleEncoder
 import org.littletonrobotics.junction.LogTable
@@ -68,6 +70,8 @@ interface ArmIO{
         fun updateInputs(inputs: ArmInputs)
 
         fun setPosition(position: Measure<Angle>)
+
+    fun setVoltage(volts: Measure<Voltage>)
     }
 
     class ArmIOReal: ArmIO{
@@ -107,6 +111,13 @@ interface ArmIO{
             leftMotor.setControl(leftControl)
 
         }
+
+        override fun setVoltage(volts: Measure<Voltage>) {
+            val control = VoltageOut(volts.`in`(Volts))
+            leftMotor.setControl(control)
+            rightMotor.setControl(control)
+        }
+
         init {
             val config = TalonFXConfiguration().apply {
                 MotorOutput.apply {
