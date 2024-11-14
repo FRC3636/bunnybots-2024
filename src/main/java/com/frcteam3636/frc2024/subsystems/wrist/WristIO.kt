@@ -10,7 +10,6 @@ import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import com.frcteam3636.frc2024.CTREMotorControllerId
 import com.frcteam3636.frc2024.TalonFX
-import com.frcteam3636.frc2024.TalonFXStatusProvider
 import com.frcteam3636.frc2024.utils.math.MotorFFGains
 import com.frcteam3636.frc2024.utils.math.PIDGains
 import com.frcteam3636.frc2024.utils.math.motorFFGains
@@ -29,7 +28,7 @@ import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.inputs.LoggableInputs
 
-interface PivotIO: TalonFXStatusProvider {
+interface WristIO {
     class Inputs : LoggableInputs {
         var position = Radians.zero()
         var velocity = RadiansPerSecond.zero()
@@ -51,7 +50,7 @@ interface PivotIO: TalonFXStatusProvider {
 
     fun pivotToAndStop(position: Rotation2d)
 
-    class WristIOKraken: PivotIO {
+    class WristIOKraken: WristIO {
         private val wristMotor = TalonFX(CTREMotorControllerId.WristMotor)
 
         private val absoluteEncoder = DutyCycleEncoder(DigitalInput(7)).apply {
@@ -93,7 +92,7 @@ interface PivotIO: TalonFXStatusProvider {
                 config
             )
 
-            wristMotor.setPosition(HARDSTOP_OFFSET.rotations)
+            wristMotor.setPosition(HARDSTOP_OFFSET.`in`(Rotations))
         }
 
         override fun updateInputs(inputs: Inputs) {
@@ -103,23 +102,26 @@ interface PivotIO: TalonFXStatusProvider {
         }
 
         override fun pivotToAndStop(position: Rotation2d) {
-            pivotToAndMove(position, Rotation2d())
-
             Logger.recordOutput("Shooter/Pivot/Position Setpoint", position)
-            Logger.recordOutput("Shooter/Pivot/Velocity Setpoint", 0.0)
+
+            val wristControl = MotionMagicTorqueCurrentFOC(0.0).apply {
+                Slot = 0
+                Position = position.rotations
+            }
+            wristMotor.setControl(wristControl)
         }
 
-        companion object {
+        internal companion object Constants {
             private const val SENSOR_TO_PIVOT_RATIO = 0.0
             private const val ABSOLUTE_ENCODER_OFFSET = 0.0
             private const val GEAR_RATIO = 0.0
-            private const val PID_GAINS = 0.0
-            private const val FF_GAINS = 0.0
+            val PID_GAINS = PIDGains(120.0, 0.0, 100.0) //placeholders
+            val FF_GAINS = MotorFFGains(7.8, 0.0, 0.0) //placeholders
             private const val GRAVITY_GAIN = 0.0
             private const val PROFILE_ACCELERATION = 0.0
             private const val PROFILE_JERK = 0.0
             private const val PROFILE_VELOCITY = 0.0
-            private const val HARDSTOP_OFFSET = 0.0
+            private val HARDSTOP_OFFSET = Radians.zero()
         }
     }
 }
