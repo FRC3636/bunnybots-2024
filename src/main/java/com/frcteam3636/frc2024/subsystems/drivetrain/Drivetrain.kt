@@ -286,8 +286,8 @@ object Drivetrain : Subsystem, Sendable {
         /** Unit: Rotations per second */
         const val ROTATION_SENSITIVITY = 1.25
 
-        val WHEEL_BASE: Double = Units.inchesToMeters(30.0)
-        val TRACK_WIDTH: Double = Units.inchesToMeters(28.0)
+        private val WHEEL_BASE: Double = Units.inchesToMeters(30.0)
+        private val TRACK_WIDTH: Double = Units.inchesToMeters(28.0)
 
         const val JOYSTICK_DEADBAND = 0.15
 
@@ -317,9 +317,9 @@ object Drivetrain : Subsystem, Sendable {
 
         // Chassis Control
         val FREE_SPEED = MetersPerSecond.of(8.132)!!
-        val ROTATION_SPEED = RadiansPerSecond.of(14.604)!!
+        private val ROTATION_SPEED = RadiansPerSecond.of(14.604)!!
 
-        val TRANSLATION_PID_GAINS = PIDGains(0.5, 0.0, 1.0)
+        private val TRANSLATION_PID_GAINS = PIDGains(0.5, 0.0, 1.0)
         val ROTATION_PID_GAINS = PIDGains(3.0, 0.0, 0.4)
 
         // Pathing

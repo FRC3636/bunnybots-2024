@@ -25,17 +25,17 @@ import org.littletonrobotics.junction.inputs.LoggableInputs
 interface ArmIO{
         class ArmInputs : LoggableInputs {
 
-            var rightPosition = Radians.zero()
-            var leftPosition = Radians.zero()
-            var position = Radians.zero()
+            var rightPosition = Radians.zero()!!
+            var leftPosition = Radians.zero()!!
+            var position = Radians.zero()!!
 
-            var absoluteEncoderPosition = Radians.zero()
+            var absoluteEncoderPosition = Radians.zero()!!
 
-            var rightCurrent = Volts.zero()
-            var leftCurrent = Volts.zero()
+            var rightCurrent = Volts.zero()!!
+            private var leftCurrent = Volts.zero()!!
 
-            var rightVelocity = RadiansPerSecond.zero()
-            var leftVelocity = RadiansPerSecond.zero()
+            var rightVelocity = RadiansPerSecond.zero()!!
+            var leftVelocity = RadiansPerSecond.zero()!!
 
             var absoluteEncoderConnected = false
 

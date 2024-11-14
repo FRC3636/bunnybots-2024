@@ -9,10 +9,10 @@ import org.littletonrobotics.junction.inputs.LoggableInputs
 
 interface IntakeIO {
     class IntakeInputs : LoggableInputs{
-        var rollerVelocity = Rotation2d()
-        var current: Double = 0.0
-        var hasBalloon: Boolean = false
-        var balloonIsBlue: Boolean = false
+        private var rollerVelocity = Rotation2d()
+        private var current: Double = 0.0
+        private var hasBalloon: Boolean = false
+        private var balloonIsBlue: Boolean = false
 
         override fun toLog(table: LogTable) {
             table.put("UTB Roller Velocity", rollerVelocity)

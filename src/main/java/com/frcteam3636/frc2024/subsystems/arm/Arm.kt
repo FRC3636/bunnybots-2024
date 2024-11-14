@@ -14,17 +14,16 @@ import org.littletonrobotics.junction.Logger
 
 
 object Arm : Subsystem {
-    var io = ArmIOReal()
+    private var io = ArmIOReal()
 
     var inputs = ArmIO.ArmInputs()
 
-    var sysID = SysIdRoutine(
+    private var sysID = SysIdRoutine(
         SysIdRoutine.Config(
             null,
             Volts.of(4.0),
-            null,
-            { state -> SignalLogger.writeString("state", state.toString()) }
-        ),
+            null
+        ) { state -> SignalLogger.writeString("state", state.toString()) },
         Mechanism(this::voltageDrive, null, this)
     )
 
@@ -43,13 +42,13 @@ object Arm : Subsystem {
             io.setPosition(position.angle)
         }, {
             io.setPosition(inputs.position)
-        })
+        })!!
 
     fun sysIdQuasistatic(direction: Direction) =
-        sysID.quasistatic(direction)
+        sysID.quasistatic(direction)!!
 
     fun sysIdDynamic(direction: Direction) =
-        sysID.dynamic(direction)
+        sysID.dynamic(direction)!!
 
     enum class Position(val angle: Measure<Angle>) {
         Stowed(Degrees.of(135.0)),

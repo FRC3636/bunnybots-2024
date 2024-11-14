@@ -3,7 +3,6 @@ package com.frcteam3636.frc2024.subsystems.indexer
 import com.revrobotics.ColorMatch
 import edu.wpi.first.wpilibj.util.Color
 import edu.wpi.first.wpilibj2.command.Command
-import edu.wpi.first.wpilibj2.command.Commands.startEnd
 import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
 
@@ -15,7 +14,7 @@ object Indexer: Subsystem {
     }
 
     var inputs = IndexerIO.IndexerInputs()
-    var currentColor: Color? = null
+    private var currentColor: Color? = null
 
     override fun periodic() {
         io.updateInputs(inputs)
@@ -35,7 +34,7 @@ object Indexer: Subsystem {
             {io.setSpinSpeed(0.0)}
         )
 
-    val RED_BALLOON_COLOR = Color(255, 0, 0)
-    val BLUE_BALLOON_COLOR = Color(0, 0, 255)
+    private val RED_BALLOON_COLOR = Color(255, 0, 0)
+    private val BLUE_BALLOON_COLOR = Color(0, 0, 255)
 
 }
