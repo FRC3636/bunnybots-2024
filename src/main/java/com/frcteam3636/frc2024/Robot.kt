@@ -2,6 +2,7 @@ package com.frcteam3636.frc2024
 
 import com.ctre.phoenix6.StatusSignal
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
+import com.frcteam3636.frc2024.subsystems.indexer.Indexer
 import com.frcteam3636.frc2024.subsystems.intake.Intake
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
@@ -71,6 +72,7 @@ object Robot : LoggedRobot() {
     private fun configureAdvantageKit() {
         Logger.recordMetadata("Git SHA", BuildConstants.GIT_SHA)
         Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE)
+        Logger.recordMetadata("Dirty", (BuildConstants.DIRTY == 1).toString())
         Logger.recordMetadata("Model", model.name)
         Logger.recordMetadata("Git Dirty", BuildConstants.DIRTY.toString())
         Logger.recordMetadata("Git Branch", BuildConstants.GIT_BRANCH)
@@ -107,6 +109,7 @@ object Robot : LoggedRobot() {
     /** Start robot subsystems so that their periodic tasks are run */
     private fun configureSubsystems() {
         Drivetrain.register()
+        Indexer.register()
     }
 
     /** Expose commands for autonomous routines to use and display an auto picker in Shuffleboard. */
@@ -123,6 +126,7 @@ object Robot : LoggedRobot() {
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
         Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft, joystickRight)
+        Indexer.defaultCommand = Indexer.autoRun()
 
         // (The button with the yellow tape on it)
         JoystickButton(joystickLeft, 8).onTrue(Commands.runOnce({
