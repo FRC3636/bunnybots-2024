@@ -14,8 +14,8 @@ public enum class BalloonState {
     None
 }
 
-interface IndexerIO{
-    class IndexerInputs : LoggableInputs {
+interface IndexerIO {
+    class Inputs : LoggableInputs {
         var indexerVelocity = Rotation2d()
         var indexerCurrent: Double = 0.0
         var balloonState: BalloonState = BalloonState.None
@@ -32,38 +32,39 @@ interface IndexerIO{
             balloonState = table.get("Balloon Color", balloonState)
         }
     }
-    fun updateInputs(inputs: IndexerInputs)
+    fun updateInputs(inputs: Inputs)
 
     fun setSpinSpeed(speed: Double)
     // percent of full speed
 }
 
-class IndexerIOReal: IndexerIO{
+class IndexerIOReal : IndexerIO{
     companion object Constants {
         const val RED_CLASS  = "red";
         const val BLUE_CLASS = "blue";
         const val NONE_CLASS = "none";
     }
 
-    private var indexerWheel =
+    private var indexerMotor =
         CANSparkFlex(
-            REVMotorControllerId.UnderTheBumperIntakeRoller,
+            REVMotorControllerId.IndexerMotor,
             CANSparkLowLevel.MotorType.kBrushless
         )
 
-    override fun updateInputs(inputs: IndexerIO.IndexerInputs) {
-        inputs.indexerVelocity = Rotation2d(indexerWheel.encoder.velocity)
-        inputs.indexerCurrent = indexerWheel.outputCurrent
+    override fun updateInputs(inputs: IndexerIO.Inputs) {
+        inputs.indexerVelocity = Rotation2d(indexerMotor.encoder.velocity)
+        inputs.indexerCurrent = indexerMotor.outputCurrent
 
-        val colorClass = LimelightHelpers.getClassifierClass("limelight");
-        when (colorClass) {
+        when (val colorClass = LimelightHelpers.getClassifierClass("limelight-sensor")) {
             RED_CLASS -> inputs.balloonState = BalloonState.Red;
             BLUE_CLASS -> inputs.balloonState = BalloonState.Blue;
             NONE_CLASS -> inputs.balloonState = BalloonState.None;
+            else -> throw AssertionError("Unknown balloon class: $colorClass")
         }
     }
 
     override fun setSpinSpeed(speed: Double) {
-        indexerWheel.set(speed)
+        assert(speed in -1.0..1.0)
+        indexerMotor.set(speed)
     }
 }

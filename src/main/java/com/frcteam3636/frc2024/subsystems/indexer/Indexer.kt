@@ -8,7 +8,7 @@ import org.littletonrobotics.junction.Logger
 object Indexer: Subsystem {
     private var io: IndexerIO = IndexerIOReal()
 
-    var inputs = IndexerIO.IndexerInputs()
+    var inputs = IndexerIO.Inputs()
 
     override fun periodic() {
         io.updateInputs(inputs)
