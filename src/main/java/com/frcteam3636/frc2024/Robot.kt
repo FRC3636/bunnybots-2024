@@ -4,6 +4,7 @@ import com.ctre.phoenix6.StatusSignal
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.frc2024.subsystems.indexer.Indexer
 import com.frcteam3636.frc2024.subsystems.intake.Intake
+import com.frcteam3636.frc2024.subsystems.wrist.Wrist
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
@@ -79,9 +80,16 @@ object Robot : LoggedRobot() {
         if (isReal()) {
             Logger.addDataReceiver(WPILOGWriter()) // Log to a USB stick
             Logger.addDataReceiver(NT4Publisher()) // Publish data to NetworkTables
-            PowerDistribution(
-                1, PowerDistribution.ModuleType.kRev
-            ) // Enables power distribution logging
+            // Enables power distribution logging
+            if (model == Model.COMPETITION) {
+                PowerDistribution(
+                    1, PowerDistribution.ModuleType.kRev
+                )
+            } else {
+                PowerDistribution(
+                    1, PowerDistribution.ModuleType.kCTRE
+                )
+            }
         } else {
             val logPath = try {
                 // Pull the replay log from AdvantageScope (or prompt the user)
@@ -109,6 +117,8 @@ object Robot : LoggedRobot() {
     private fun configureSubsystems() {
         Drivetrain.register()
         Indexer.register()
+        Intake.register()
+        Wrist.register()
     }
 
     /** Expose commands for autonomous routines to use and display an auto picker in Shuffleboard. */
@@ -187,7 +197,7 @@ object Robot : LoggedRobot() {
         when (val key = Preferences.getString("Model", "competition")) {
             "competition" -> Model.COMPETITION
             "prototype" -> Model.PROTOTYPE
-            else -> throw Exception("invalid model found in preferences: $key")
+            else -> throw AssertionError("Invalid model found in preferences: $key")
         }
     }
 }

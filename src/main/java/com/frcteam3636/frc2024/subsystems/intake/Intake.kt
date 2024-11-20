@@ -12,7 +12,7 @@ object Intake: Subsystem {
         Robot.Model.PROTOTYPE -> IntakeIO.IntakeIOSim()
     }
 
-    var inputs = IntakeIO.IntakeInputs()
+    var inputs = IntakeIO.Inputs()
 
     override fun periodic() {
         Logger.processInputs("Intake", inputs)

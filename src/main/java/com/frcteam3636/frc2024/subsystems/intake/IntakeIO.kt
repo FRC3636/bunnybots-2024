@@ -8,26 +8,19 @@ import org.littletonrobotics.junction.inputs.LoggableInputs
 
 
 interface IntakeIO {
-    class IntakeInputs : LoggableInputs{
+    class Inputs : LoggableInputs {
         var rollerVelocity = Rotation2d()
         var current: Double = 0.0
-        var hasBalloon: Boolean = false
-        var balloonIsBlue: Boolean = false
 
         override fun toLog(table: LogTable) {
-            table.put("UTB Roller Velocity", rollerVelocity)
-            table.put("UTB Current", current)
-            table.put("Has balloon", hasBalloon)
-            table.put("Balloon color", balloonIsBlue)
+            table.put("Intake Velocity", rollerVelocity)
+            table.put("Intake Current", current)
         }
 
         override fun fromLog(table: LogTable) {
-            rollerVelocity = table.get("UTB Roller Velocity", rollerVelocity)!![0]
-            current = table.get("UTB Current", current)
-            hasBalloon = table.get("Has balloon", hasBalloon)
-            balloonIsBlue = table.get("Balloon color", balloonIsBlue)
+            rollerVelocity = table.get("Intake Velocity", rollerVelocity)!![0]
+            current = table.get("Intake Current", current)
         }
-
 
     }
 
@@ -36,11 +29,12 @@ interface IntakeIO {
     class IntakeIOReal: IntakeIO {
         private var motor =
             CANSparkFlex(
-                REVMotorControllerId.UnderTheBumperIntakeRoller,
+                REVMotorControllerId.IntakeMotor,
                 CANSparkLowLevel.MotorType.kBrushless
             )
 
         override fun setSpeed(percent: Double) {
+            assert(percent in -1.0..1.0)
             motor.set(percent)
         }
     }
