@@ -5,8 +5,11 @@ import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
 import com.frcteam3636.frc2024.CANSparkFlex
 import com.frcteam3636.frc2024.REVMotorControllerId
+import com.frcteam3636.frc2024.Robot
 import com.frcteam3636.frc2024.utils.LimelightHelpers
 import com.revrobotics.CANSparkLowLevel
+import edu.wpi.first.math.system.plant.DCMotor
+import edu.wpi.first.wpilibj.simulation.FlywheelSim
 
 public enum class BalloonState {
     Blue,
@@ -67,4 +70,22 @@ class IndexerIOReal : IndexerIO{
         assert(speed in -1.0..1.0)
         indexerMotor.set(speed)
     }
+}
+
+class IndexerIOSim: IndexerIO {
+    val flywheelSim = FlywheelSim(
+        DCMotor.getNeoVortex(1),
+        1.0,
+        1.0
+    )
+
+    override fun updateInputs(inputs: IndexerIO.Inputs) {
+        flywheelSim.update(Robot.period)
+        inputs.indexerVelocity = flywheelSim.angularVelocityRadPerSec
+    }
+
+    override fun setSpinSpeed(speed: Double) {
+        TODO("Not yet implemented")
+    }
+
 }
