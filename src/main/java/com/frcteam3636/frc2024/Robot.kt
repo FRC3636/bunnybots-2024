@@ -1,6 +1,9 @@
 package com.frcteam3636.frc2024
 
+import BuildConstants
+import com.ctre.phoenix6.SignalLogger
 import com.ctre.phoenix6.StatusSignal
+import com.frcteam3636.frc2024.subsystems.arm.Arm
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.frc2024.subsystems.indexer.Indexer
 import com.frcteam3636.frc2024.subsystems.intake.Intake
@@ -16,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import org.littletonrobotics.junction.LogFileUtil
 import org.littletonrobotics.junction.LoggedRobot
 import org.littletonrobotics.junction.Logger
@@ -143,20 +147,55 @@ object Robot : LoggedRobot() {
             Drivetrain.zeroGyro()
         }).ignoringDisable(true))
 
-        //Intake
-        controller.rightBumper()
-            .debounce(0.150)
-            .whileTrue(
-                Intake.intake()
-            )
+//        //Intake
+//        controller.rightBumper()
+//            .debounce(0.150)
+//            .whileTrue(
+//                Intake.intake()
+//            )
+//
+//        //Outtake
+//        controller.leftBumper()
+//            .whileTrue(
+//                Commands.parallel(
+//                    Intake.outtake(),
+//                )
+//            )
 
-        //Outtake
+        //SysId
         controller.leftBumper()
-            .whileTrue(
-                Commands.parallel(
-                    Intake.outtake(),
-                )
-            )
+            .onTrue(Commands.runOnce(SignalLogger::start))
+
+        controller.rightBumper()
+            .onTrue(Commands.runOnce(SignalLogger::stop))
+
+        controller.y()
+            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward))
+
+        controller.a()
+            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
+
+        controller.b()
+            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kForward))
+
+        controller.x()
+            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kReverse))
+
+        //Arm positions
+//        controller.a()
+//            .onTrue(
+//                Arm.moveToPosition(Arm.Position.Stowed)
+//            )
+//
+//        controller.x()
+//            .onTrue(
+//                Arm.moveToPosition(Arm.Position.PickUp)
+//            )
+//
+//        controller.y()
+//            .onTrue(
+//                Arm.moveToPosition(Arm.Position.Lower)
+//            )
     }
 
     /** Add data to the driver station dashboard. */

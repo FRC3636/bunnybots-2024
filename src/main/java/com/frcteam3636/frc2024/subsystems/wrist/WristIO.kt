@@ -1,10 +1,7 @@
 package com.frcteam3636.frc2024.subsystems.wrist
 
-import com.ctre.phoenix6.StatusSignal
 import com.ctre.phoenix6.configs.TalonFXConfiguration
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC
-import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC
-import com.ctre.phoenix6.controls.VoltageOut
 import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
@@ -14,25 +11,20 @@ import com.frcteam3636.frc2024.utils.math.MotorFFGains
 import com.frcteam3636.frc2024.utils.math.PIDGains
 import com.frcteam3636.frc2024.utils.math.motorFFGains
 import com.frcteam3636.frc2024.utils.math.pidGains
-import edu.wpi.first.math.geometry.Rotation2d
-import edu.wpi.first.math.trajectory.TrapezoidProfile
-import edu.wpi.first.math.util.Units
 import edu.wpi.first.units.Angle
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Units.*
-import edu.wpi.first.units.Velocity
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DutyCycleEncoder
-import edu.wpi.first.wpilibj.Timer
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.inputs.LoggableInputs
 
 interface WristIO {
     class Inputs : LoggableInputs {
-        var position = Radians.zero()
-        var velocity = RadiansPerSecond.zero()
-        var voltage = Volts.zero()
+        var position = Radians.zero()!!
+        var velocity = RadiansPerSecond.zero()!!
+        var voltage = Volts.zero()!!
 
         override fun toLog(table: LogTable) {
             table.put("Position", position)
@@ -54,9 +46,6 @@ interface WristIO {
         private val wristMotor = TalonFX(CTREMotorControllerId.WristMotor)
 
         private val absoluteEncoder = DutyCycleEncoder(DigitalInput(7))
-
-        private val rawAbsoluteEncoderPosition
-            get() = Rotation2d.fromRotations(-absoluteEncoder.absolutePosition)
 
         init {
             val config = TalonFXConfiguration().apply {
