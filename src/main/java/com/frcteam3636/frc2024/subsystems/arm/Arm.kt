@@ -39,9 +39,9 @@ object Arm : Subsystem {
 
     fun moveToPosition(position: Position) =
         startEnd({
-            io.setPosition(position.angle)
+            io.pivotToPosition(position.angle)
         }, {
-            io.setPosition(inputs.position)
+            io.pivotToPosition(inputs.position)
         })!!
 
     fun sysIdQuasistatic(direction: Direction) =

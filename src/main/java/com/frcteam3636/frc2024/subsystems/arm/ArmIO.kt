@@ -69,7 +69,7 @@ interface ArmIO{
 
         fun updateInputs(inputs: ArmInputs)
 
-        fun setPosition(position: Measure<Angle>)
+        fun pivotToPosition(position: Measure<Angle>)
 
     fun setVoltage(volts: Measure<Voltage>)
     }
@@ -101,18 +101,20 @@ interface ArmIO{
             rightMotor.setPosition(inputs.absoluteEncoderPosition.`in`(Rotations))
         }
 
-        override fun setPosition(position: Measure<Angle>) {
+        override fun pivotToPosition(position: Measure<Angle>) {
             Logger.recordOutput("Shooter/Pivot/Position Setpoint", position)
 
-            val leftControl = MotionMagicTorqueCurrentFOC(0.0).apply {
+            val control = MotionMagicTorqueCurrentFOC(0.0).apply {
                 Slot = 0
                 Position = position.`in`(Rotations)
             }
-            leftMotor.setControl(leftControl)
+            leftMotor.setControl(control)
+            rightMotor.setControl(control)
 
         }
 
         override fun setVoltage(volts: Measure<Voltage>) {
+            assert(volts in Volts.of(-12.0)..Volts.of(12.0))
             val control = VoltageOut(volts.`in`(Volts))
             leftMotor.setControl(control)
             rightMotor.setControl(control)
