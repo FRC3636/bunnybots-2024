@@ -8,7 +8,7 @@ import org.littletonrobotics.junction.Logger
 object Indexer: Subsystem {
     private var io: IndexerIO = IndexerIOReal()
 
-    var inputs = IndexerIO.IndexerInputs()
+    var inputs = IndexerIO.Inputs()
 
     override fun periodic() {
         io.updateInputs(inputs)
@@ -39,11 +39,5 @@ object Indexer: Subsystem {
             {
                 io.setSpinSpeed(0.0)
             }
-        )
-
-    fun outtakeBalloon(): Command =
-        startEnd(
-            {io.setSpinSpeed(-0.5)},
-            {io.setSpinSpeed(0.0)}
         )
 }

@@ -24,12 +24,8 @@ object Arm : Subsystem {
             Volts.of(4.0),
             null
         ) { state -> SignalLogger.writeString("state", state.toString()) },
-        Mechanism(this::voltageDrive, null, this)
+        Mechanism(io::setVoltage, null, this)
     )
-
-    private fun voltageDrive(measure: Measure<Voltage>) {
-        io.setVoltage(measure)
-    }
 
     override fun periodic() {
         io.updateInputs(inputs)
