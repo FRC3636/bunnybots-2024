@@ -32,7 +32,7 @@ interface ArmIO{
             var absoluteEncoderPosition = Radians.zero()!!
 
             var rightCurrent = Volts.zero()!!
-            private var leftCurrent = Volts.zero()!!
+            var leftCurrent = Volts.zero()!!
 
             var rightVelocity = RadiansPerSecond.zero()!!
             var leftVelocity = RadiansPerSecond.zero()!!
