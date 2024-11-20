@@ -18,12 +18,9 @@ enum class REVMotorControllerId(val num: Int) {
     BackRightDrivingMotor(3),
     FrontRightDrivingMotor(4),
 
-    LeftShooterFlywheel(11),
-    RightShooterFlywheel(12),
-    Indexer(13),
-    AmpMech(14),
+    IndexerMotor(13),
 
-    UnderTheBumperIntakeRoller(21),
+    IntakeMotor(21),
 }
 
 fun CANSparkMax(id: REVMotorControllerId, type: CANSparkLowLevel.MotorType) =

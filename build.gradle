@@ -69,6 +69,7 @@ deploy {
                 // getTargetTypeClass is a shortcut to get the class type using a string
 
                 frcJava(getArtifactTypeClass('FRCJavaArtifact')) {
+                    jvmArgs.add("-ea") // Remove this flag during comp to disable asserts
                 }
 
                 // Static files artifact

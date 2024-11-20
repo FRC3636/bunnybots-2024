@@ -8,7 +8,7 @@ import org.littletonrobotics.junction.Logger
 object Wrist: Subsystem {
     private var io: WristIO = WristIO.WristIOKraken()
 
-    var inputs = IntakeIO.IntakeInputs()
+    var inputs = WristIO.Inputs()
 
     override fun periodic() {
         Logger.processInputs("Wrist", inputs)

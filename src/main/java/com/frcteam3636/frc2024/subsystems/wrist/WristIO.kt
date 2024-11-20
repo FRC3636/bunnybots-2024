@@ -85,7 +85,7 @@ interface WristIO {
         }
 
         override fun pivotToAndStop(position: Measure<Angle>) {
-            Logger.recordOutput("Shooter/Pivot/Position Setpoint", position)
+            Logger.recordOutput("Wrist/Position Setpoint", position)
 
             val wristControl = MotionMagicTorqueCurrentFOC(0.0).apply {
                 Slot = 0
