@@ -7,28 +7,17 @@ import com.revrobotics.CANSparkLowLevel
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.units.Units.*
 import edu.wpi.first.wpilibj.simulation.FlywheelSim
+import org.littletonrobotics.junction.AutoLog
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
 
 
 interface IntakeIO {
-    class Inputs : LoggableInputs {
+    @AutoLog
+    open class Inputs {
         var rollerVelocity = RotationsPerSecond.zero()
         var current = Amps.zero()
         var position = Radians.zero()
-
-        override fun toLog(table: LogTable) {
-            table.put("Intake Velocity", rollerVelocity)
-            table.put("Intake Current", current)
-            table.put("Intake Roller Position", position)
-        }
-
-        override fun fromLog(table: LogTable) {
-            rollerVelocity = table.get("Intake Velocity", rollerVelocity)
-            current = table.get("Intake Current", current)
-            position = table.get("Intake Roller Position", position)
-        }
-
     }
 
     fun setSpeed(percent: Double)
