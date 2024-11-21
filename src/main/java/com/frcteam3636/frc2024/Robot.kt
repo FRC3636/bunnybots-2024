@@ -148,12 +148,30 @@ object Robot : LoggedRobot() {
         }).ignoringDisable(true))
 
 //        //Intake
-//        controller.rightBumper()
+//        controller.a()
+//            .debounce(0.150)
+//            .whileTrue(
+//                Intake.outtake()
+//            )
+//
+//        controller.x()
 //            .debounce(0.150)
 //            .whileTrue(
 //                Intake.intake()
 //            )
 //
+//        controller.b()
+//            .debounce(0.150)
+//            .whileTrue(
+//                Indexer.outtakeBalloon()
+//            )
+//
+//        controller.y()
+//            .debounce(0.150)
+//            .whileTrue(
+//                Indexer.indexBalloon()
+//            )
+
 //        //Outtake
 //        controller.leftBumper()
 //            .whileTrue(
