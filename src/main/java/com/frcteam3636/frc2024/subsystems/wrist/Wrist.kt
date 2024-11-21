@@ -1,7 +1,6 @@
 package com.frcteam3636.frc2024.subsystems.wrist
 
 import com.frcteam3636.frc2024.subsystems.arm.Arm
-import com.frcteam3636.frc2024.subsystems.intake.IntakeIO
 import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
 

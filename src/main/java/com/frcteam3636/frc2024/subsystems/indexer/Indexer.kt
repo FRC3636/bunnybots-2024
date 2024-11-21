@@ -1,7 +1,11 @@
 package com.frcteam3636.frc2024.subsystems.indexer
 
 import com.frcteam3636.frc2024.Robot
+import com.frcteam3636.frc2024.subsystems.intake.Intake
+import edu.wpi.first.units.Units.Degrees
 import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.util.Color
+import edu.wpi.first.wpilibj.util.Color8Bit
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
@@ -18,6 +22,13 @@ object Indexer: Subsystem {
     override fun periodic() {
         io.updateInputs(inputs)
         Logger.processInputs("Indexer", inputs)
+
+        Intake.indexerAngleLigament.angle = inputs.position.`in`(Degrees)
+        Intake.indexerAngleLigament.color = when (inputs.balloonState) {
+            BalloonState.Blue -> Color8Bit(Color.kBlue)
+            BalloonState.Red -> Color8Bit(Color.kRed)
+            else -> Color8Bit(Color.kGreen)
+        }
     }
 
     /**
@@ -45,4 +56,14 @@ object Indexer: Subsystem {
                 io.setSpinSpeed(0.0)
             }
         )
+
+    fun indexBalloon(): Command = runEnd(
+        {io.setSpinSpeed(0.5)},
+        {io.setSpinSpeed(0.0)}
+    )
+
+    fun outtakeBalloon(): Command = runEnd(
+        {io.setSpinSpeed(-0.5)},
+        {io.setSpinSpeed(0.0)}
+    )
 }
