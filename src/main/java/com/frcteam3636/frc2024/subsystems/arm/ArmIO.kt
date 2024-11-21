@@ -80,7 +80,7 @@ interface ArmIO{
 
         private val rightMotor = TalonFX(CTREMotorControllerId.RightArmMotor)
 
-        private val absoluteEncoder = DutyCycleEncoder(DigitalInput(7))
+        private val absoluteEncoder = DutyCycleEncoder(DigitalInput(8))
 
         override fun updateInputs(inputs: ArmIO.ArmInputs) {
             inputs.position = Rotations.of(absoluteEncoder.absolutePosition)

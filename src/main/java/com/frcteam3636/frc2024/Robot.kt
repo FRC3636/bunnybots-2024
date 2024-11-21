@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
-import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import org.littletonrobotics.junction.LogFileUtil
 import org.littletonrobotics.junction.LoggedRobot
@@ -138,14 +137,14 @@ object Robot : LoggedRobot() {
 
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
-        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft, joystickRight)
+//        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft, joystickRight)
         Indexer.defaultCommand = Indexer.autoRun()
 
         // (The button with the yellow tape on it)
-        JoystickButton(joystickLeft, 8).onTrue(Commands.runOnce({
-            println("Zeroing gyro.")
-            Drivetrain.zeroGyro()
-        }).ignoringDisable(true))
+//        JoystickButton(joystickLeft, 8).onTrue(Commands.runOnce({
+//            println("Zeroing gyro.")
+//            Drivetrain.zeroGyro()
+//        }).ignoringDisable(true))
 
 //        //Intake
 //        controller.rightBumper()
@@ -154,6 +153,30 @@ object Robot : LoggedRobot() {
 //                Intake.intake()
 //            )
 //
+        controller.a()
+            .debounce(0.150)
+            .whileTrue(
+                Intake.outtake()
+            )
+
+        controller.x()
+            .debounce(0.150)
+            .whileTrue(
+                Intake.intake()
+            )
+
+        controller.b()
+            .debounce(0.150)
+            .whileTrue(
+                Indexer.outtakeBalloon()
+            )
+
+        controller.y()
+            .debounce(0.150)
+            .whileTrue(
+                Indexer.indexBalloon()
+            )
+
 //        //Outtake
 //        controller.leftBumper()
 //            .whileTrue(
