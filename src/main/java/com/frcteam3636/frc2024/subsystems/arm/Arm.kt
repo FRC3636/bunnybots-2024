@@ -1,6 +1,10 @@
 package com.frcteam3636.frc2024.subsystems.arm
 
 import com.ctre.phoenix6.SignalLogger
+import com.frcteam3636.frc2024.Robot
+import com.frcteam3636.frc2024.subsystems.indexer.IndexerIOPrototype
+import com.frcteam3636.frc2024.subsystems.indexer.IndexerIOReal
+import com.frcteam3636.frc2024.subsystems.indexer.IndexerIOSim
 import edu.wpi.first.units.Angle
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Units.Degrees
@@ -14,7 +18,11 @@ import org.littletonrobotics.junction.Logger
 
 
 object Arm : Subsystem {
-    private var io = ArmIOReal()
+    private var io: ArmIO = when (Robot.model) {
+        Robot.Model.SIMULATION -> ArmIOSim()
+        Robot.Model.COMPETITION -> ArmIOReal()
+        Robot.Model.PROTOTYPE -> ArmIOPrototype()
+    }
 
     var inputs = ArmIO.ArmInputs()
 

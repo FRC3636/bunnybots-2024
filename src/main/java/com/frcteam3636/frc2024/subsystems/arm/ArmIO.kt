@@ -6,17 +6,18 @@ import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
 import com.frcteam3636.frc2024.CTREMotorControllerId
+import com.frcteam3636.frc2024.Robot
 import com.frcteam3636.frc2024.TalonFX
-import com.frcteam3636.frc2024.utils.math.MotorFFGains
-import com.frcteam3636.frc2024.utils.math.PIDGains
-import com.frcteam3636.frc2024.utils.math.motorFFGains
-import com.frcteam3636.frc2024.utils.math.pidGains
+import com.frcteam3636.frc2024.utils.math.*
+import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.units.Angle
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Units.*
 import edu.wpi.first.units.Voltage
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DutyCycleEncoder
+import edu.wpi.first.wpilibj.simulation.FlywheelSim
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.inputs.LoggableInputs
@@ -165,4 +166,48 @@ interface ArmIO{
             private const val PROFILE_VELOCITY = 0.0
         }
 
+    }
+
+    class ArmIOSim : ArmIO {
+        val armSim = SingleJointedArmSim(
+            DCMotor.getKrakenX60(1),
+            3.0,
+            0.0301907551,
+            0.331414,
+            -0.142921,
+            2.32814365359,
+            true,
+            -0.142921
+        )
+
+        val pidController = PIDController(ArmIOReal.PID_GAINS)
+        var setPoint = 0.0
+
+        override fun updateInputs(inputs: ArmIO.ArmInputs) {
+            armSim.update(Robot.period)
+            inputs.rightVelocity = RadiansPerSecond.of(armSim.velocityRadPerSec)
+            inputs.leftVelocity = RadiansPerSecond.of(armSim.velocityRadPerSec)
+            val pidVoltage = pidController.calculate(inputs.position.`in`(Radians),setPoint)
+            armSim.setInputVoltage(pidVoltage)
+        }
+
+        override fun pivotToPosition(position: Measure<Angle>) {
+            setPoint = position.`in`(Radians)
+        }
+
+        override fun setVoltage(volts: Measure<Voltage>) {
+            armSim.setInputVoltage(volts.`in`(Volts))
+        }
+    }
+
+    class ArmIOPrototype: ArmIO {
+        //placeholder
+        override fun updateInputs(inputs: ArmIO.ArmInputs) {
+        }
+
+        override fun pivotToPosition(position: Measure<Angle>) {
+        }
+
+        override fun setVoltage(volts: Measure<Voltage>) {
+        }
     }
