@@ -89,12 +89,12 @@ interface ArmIO{
 
             inputs.absoluteEncoderPosition = Rotations.of(absoluteEncoder.absolutePosition)
 
-            inputs.leftPosition = Radians.of(leftMotor.position.value)
-            inputs.leftVelocity = RadiansPerSecond.of(leftMotor.velocity.value)
+            inputs.leftPosition = Rotations.of(leftMotor.position.value)
+            inputs.leftVelocity = RotationsPerSecond.of(leftMotor.velocity.value)
 
 
-            inputs.rightPosition = Radians.of(rightMotor.position.value)
-            inputs.rightVelocity = RadiansPerSecond.of(rightMotor.position.value)
+            inputs.rightPosition = Rotations.of(rightMotor.position.value)
+            inputs.rightVelocity = RotationsPerSecond.of(rightMotor.position.value)
 
             inputs.rightCurrent = Volts.of(leftMotor.motorVoltage.value)
 
@@ -171,8 +171,8 @@ interface ArmIO{
     class ArmIOSim : ArmIO {
         val armSim = SingleJointedArmSim(
             DCMotor.getKrakenX60(1),
-            1.0,
-            1.0,
+            3.0,
+            0.0301907551,
             0.331414,
             -0.142921,
             2.32814365359,
