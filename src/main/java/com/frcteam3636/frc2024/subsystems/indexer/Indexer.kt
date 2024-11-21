@@ -1,12 +1,17 @@
 package com.frcteam3636.frc2024.subsystems.indexer
 
+import com.frcteam3636.frc2024.Robot
 import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
 
 object Indexer: Subsystem {
-    private var io: IndexerIO = IndexerIOReal()
+    private var io: IndexerIO = when (Robot.model) {
+        Robot.Model.SIMULATION -> IndexerIOSim()
+        Robot.Model.COMPETITION -> IndexerIOReal()
+        Robot.Model.PROTOTYPE -> IndexerIOPrototype()
+    }
 
     var inputs = IndexerIO.Inputs()
 

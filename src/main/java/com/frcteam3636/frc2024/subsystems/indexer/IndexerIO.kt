@@ -9,6 +9,8 @@ import com.frcteam3636.frc2024.Robot
 import com.frcteam3636.frc2024.utils.LimelightHelpers
 import com.revrobotics.CANSparkLowLevel
 import edu.wpi.first.math.system.plant.DCMotor
+import edu.wpi.first.units.Units.RadiansPerSecond
+import edu.wpi.first.units.Units.RotationsPerSecond
 import edu.wpi.first.wpilibj.simulation.FlywheelSim
 
 public enum class BalloonState {
@@ -19,7 +21,7 @@ public enum class BalloonState {
 
 interface IndexerIO {
     class Inputs : LoggableInputs {
-        var indexerVelocity = Rotation2d()
+        var indexerVelocity = RotationsPerSecond.zero()
         var indexerCurrent: Double = 0.0
         var balloonState: BalloonState = BalloonState.None
 
@@ -30,7 +32,7 @@ interface IndexerIO {
         }
 
         override fun fromLog(table: LogTable) {
-            indexerVelocity = table.get("Indexer Velocity", indexerVelocity)!![0]
+            indexerVelocity = table.get("Indexer Velocity", indexerVelocity)!!
             indexerCurrent = table.get("Indexer Wheel Current", indexerCurrent)
             balloonState = table.get("Balloon Color", balloonState)
         }
@@ -55,7 +57,7 @@ class IndexerIOReal : IndexerIO{
         )
 
     override fun updateInputs(inputs: IndexerIO.Inputs) {
-        inputs.indexerVelocity = Rotation2d(indexerMotor.encoder.velocity)
+        inputs.indexerVelocity = RadiansPerSecond.of(indexerMotor.encoder.velocity)
         inputs.indexerCurrent = indexerMotor.outputCurrent
 
         when (val colorClass = LimelightHelpers.getClassifierClass("limelight-sensor")) {
@@ -81,11 +83,20 @@ class IndexerIOSim: IndexerIO {
 
     override fun updateInputs(inputs: IndexerIO.Inputs) {
         flywheelSim.update(Robot.period)
-        inputs.indexerVelocity = flywheelSim.angularVelocityRadPerSec
+        inputs.indexerVelocity = RadiansPerSecond.of(flywheelSim.angularVelocityRadPerSec)
     }
 
     override fun setSpinSpeed(speed: Double) {
-        TODO("Not yet implemented")
+        assert(speed in -1.0..1.0)
+        flywheelSim.setInputVoltage(speed*12.0)
+    }
+}
+
+class IndexerIOPrototype: IndexerIO {
+    override fun updateInputs(inputs: IndexerIO.Inputs) {
+    }
+
+    override fun setSpinSpeed(speed: Double) {
     }
 
 }
