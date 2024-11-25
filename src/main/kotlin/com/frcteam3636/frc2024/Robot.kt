@@ -1,6 +1,5 @@
 package com.frcteam3636.frc2024
 
-import BuildConstants
 import com.ctre.phoenix6.SignalLogger
 import com.ctre.phoenix6.StatusSignal
 import com.frcteam3636.frc2024.subsystems.arm.Arm
@@ -8,6 +7,10 @@ import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.frc2024.subsystems.indexer.Indexer
 import com.frcteam3636.frc2024.subsystems.intake.Intake
 import com.frcteam3636.frc2024.subsystems.wrist.Wrist
+import com.frcteam3636.frc2024.version.BUILD_DATE
+import com.frcteam3636.frc2024.version.DIRTY
+import com.frcteam3636.frc2024.version.GIT_BRANCH
+import com.frcteam3636.frc2024.version.GIT_SHA
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
@@ -75,11 +78,11 @@ object Robot : LoggedRobot() {
 
     /** Start logging or pull replay logs from a file */
     private fun configureAdvantageKit() {
-        Logger.recordMetadata("Git SHA", BuildConstants.GIT_SHA)
-        Logger.recordMetadata("BuildDate", BuildConstants.BUILD_DATE)
-        Logger.recordMetadata("Git Tree Dirty", (BuildConstants.DIRTY == 1).toString())
+        Logger.recordMetadata("Git SHA", GIT_SHA)
+        Logger.recordMetadata("Build Date", BUILD_DATE)
+        Logger.recordMetadata("Git Tree Dirty", (DIRTY == 1).toString())
+        Logger.recordMetadata("Git Branch", GIT_BRANCH)
         Logger.recordMetadata("Model", model.name)
-        Logger.recordMetadata("Git Branch", BuildConstants.GIT_BRANCH)
 
         if (isReal()) {
             Logger.addDataReceiver(WPILOGWriter()) // Log to a USB stick
