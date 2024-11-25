@@ -7,10 +7,10 @@ import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.frc2024.subsystems.indexer.Indexer
 import com.frcteam3636.frc2024.subsystems.intake.Intake
 import com.frcteam3636.frc2024.subsystems.wrist.Wrist
-import com.frcteam3636.frc2024.version.BUILD_DATE
-import com.frcteam3636.frc2024.version.DIRTY
-import com.frcteam3636.frc2024.version.GIT_BRANCH
-import com.frcteam3636.frc2024.version.GIT_SHA
+import com.frcteam3636.version.BUILD_DATE
+import com.frcteam3636.version.DIRTY
+import com.frcteam3636.version.GIT_BRANCH
+import com.frcteam3636.version.GIT_SHA
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
