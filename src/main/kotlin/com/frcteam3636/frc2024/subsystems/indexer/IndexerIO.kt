@@ -11,6 +11,7 @@ import com.revrobotics.CANSparkLowLevel
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.units.Units.*
 import edu.wpi.first.wpilibj.simulation.FlywheelSim
+import org.team9432.annotation.Logged
 
 enum class BalloonState {
     Blue,
@@ -18,28 +19,16 @@ enum class BalloonState {
     None
 }
 
+@Logged
+open class IndexerInputs {
+    var indexerVelocity = RotationsPerSecond.zero()!!
+    var indexerCurrent = Amps.zero()!!
+    var balloonState: BalloonState = BalloonState.None
+    var position = Radians.zero()!!
+}
+
 interface IndexerIO {
-    class Inputs : LoggableInputs {
-        var indexerVelocity = RotationsPerSecond.zero()
-        var indexerCurrent = Amps.zero()
-        var balloonState: BalloonState = BalloonState.None
-        var position = Radians.zero()
-
-        override fun toLog(table: LogTable?) {
-            table?.put("Indexer Wheel Velocity", indexerVelocity)
-            table?.put("Indexer Wheel Current", indexerCurrent)
-            table?.put("Balloon Color", balloonState)
-            table?.put("Indexer Wheel Angle", position)
-        }
-
-        override fun fromLog(table: LogTable) {
-            indexerVelocity = table.get("Indexer Velocity", indexerVelocity)
-            indexerCurrent = table.get("Indexer Wheel Current", indexerCurrent)
-            balloonState = table.get("Balloon Color", balloonState)
-            position = table.get("Indexer Wheel Angle", position)
-        }
-    }
-    fun updateInputs(inputs: Inputs)
+    fun updateInputs(inputs: IndexerInputs)
 
     fun setSpinSpeed(speed: Double)
     // percent of full speed
@@ -58,7 +47,7 @@ class IndexerIOReal : IndexerIO{
             CANSparkLowLevel.MotorType.kBrushless
         )
 
-    override fun updateInputs(inputs: IndexerIO.Inputs) {
+    override fun updateInputs(inputs: IndexerInputs) {
         inputs.indexerVelocity = Rotations.per(Minute).of(indexerMotor.encoder.velocity)
         inputs.indexerCurrent = Amps.of(indexerMotor.outputCurrent)
         inputs.position = Rotations.of(indexerMotor.encoder.position)
@@ -84,7 +73,7 @@ class IndexerIOSim: IndexerIO {
         1.0
     )
 
-    override fun updateInputs(inputs: IndexerIO.Inputs) {
+    override fun updateInputs(inputs: IndexerInputs) {
         flywheelSim.update(Robot.period)
         inputs.indexerVelocity = RadiansPerSecond.of(flywheelSim.angularVelocityRadPerSec)
         inputs.position += Radians.of(flywheelSim.angularVelocityRadPerSec * Robot.period)
@@ -98,7 +87,7 @@ class IndexerIOSim: IndexerIO {
 }
 
 class IndexerIOPrototype: IndexerIO {
-    override fun updateInputs(inputs: IndexerIO.Inputs) {
+    override fun updateInputs(inputs: IndexerInputs) {
     }
 
     override fun setSpinSpeed(speed: Double) {

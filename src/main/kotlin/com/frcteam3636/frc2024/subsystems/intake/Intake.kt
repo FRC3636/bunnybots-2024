@@ -12,12 +12,12 @@ import org.littletonrobotics.junction.Logger
 
 object Intake: Subsystem {
     private var io: IntakeIO = when (Robot.model) {
-        Robot.Model.SIMULATION -> IntakeIO.IntakeIOSim()
-        Robot.Model.COMPETITION -> IntakeIO.IntakeIOReal()
-        Robot.Model.PROTOTYPE -> IntakeIO.IntakeIOSim()
+        Robot.Model.SIMULATION -> IntakeIOSim()
+        Robot.Model.COMPETITION -> IntakeIOReal()
+        Robot.Model.PROTOTYPE -> IntakeIOSim()
     }
 
-    var inputs = IntakeIO.Inputs()
+    var inputs = LoggedIntakeInputs()
 
     var mechanism = Mechanism2d(100.0, 200.0)
     var intakeAngleLigament = MechanismLigament2d("Intake Ligament", 50.0, 90.0, 5.0, Color8Bit(Color.kGreen))

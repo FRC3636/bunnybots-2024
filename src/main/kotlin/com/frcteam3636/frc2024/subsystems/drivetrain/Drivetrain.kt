@@ -51,7 +51,7 @@ object Drivetrain : Subsystem, Sendable {
         Robot.Model.COMPETITION -> DrivetrainIOReal.fromKrakenSwerve()
         Robot.Model.PROTOTYPE -> DrivetrainIOReal.fromNeoSwerve()
     }
-    val inputs = DrivetrainIO.Inputs()
+    val inputs = LoggedDrivetrainInputs()
 
     private val absolutePoseIOs = mapOf(
         "Limelight" to LimelightPoseIOReal(

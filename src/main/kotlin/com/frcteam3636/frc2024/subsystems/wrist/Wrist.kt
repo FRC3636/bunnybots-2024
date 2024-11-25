@@ -5,9 +5,8 @@ import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
 
 object Wrist: Subsystem {
-    private var io: WristIO = WristIO.WristIOKraken()
-
-    var inputs = WristIO.Inputs()
+    private var io: WristIO = WristIOKraken()
+    var inputs = LoggedWristInputs()
 
     override fun periodic() {
         Logger.processInputs("Wrist", inputs)

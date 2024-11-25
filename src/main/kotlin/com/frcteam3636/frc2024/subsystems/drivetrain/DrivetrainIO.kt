@@ -7,40 +7,43 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.inputs.LoggableInputs
+import org.team9432.annotation.Logged
+
+@Logged
+open class DrivetrainInputs: LoggableInputs {
+    var gyroRotation = Rotation3d()
+    var measuredStates = PerCorner.generate { SwerveModuleState() }
+    var measuredPositions = PerCorner.generate { SwerveModulePosition() }
+    var gyroConnected = true
+
+    override fun fromLog(table: LogTable?) {
+        gyroRotation = table?.get("Gyro Rotation", gyroRotation)!![0]
+        measuredStates =
+            PerCorner.fromConventionalArray(
+                table.get("Measured States", *measuredStates.toTypedArray())
+            )
+        measuredPositions =
+            PerCorner.fromConventionalArray(
+                table.get("Measured Positions", *measuredPositions.toTypedArray())
+            )
+        gyroConnected = table.get("Gyro Connected", false)
+    }
+
+    override fun toLog(table: LogTable?) {
+        table?.put("Gyro Rotation", gyroRotation)
+        table?.put("Measured States", *measuredStates.toTypedArray())
+        table?.put("Measured Positions", *measuredPositions.toTypedArray())
+        table?.put("Gyro Connected", gyroConnected)
+    }
+}
+
 
 abstract class DrivetrainIO {
     protected abstract val gyro: Gyro
     abstract val modules: PerCorner<out SwerveModule>
 
-    class Inputs : LoggableInputs {
-        var gyroRotation = Rotation3d()
-        var measuredStates = PerCorner.generate { SwerveModuleState() }
-        var measuredPositions = PerCorner.generate { SwerveModulePosition() }
 
-        var gyroConnected = true
-
-        override fun fromLog(table: LogTable?) {
-            gyroRotation = table?.get("Gyro Rotation", gyroRotation)!![0]
-            measuredStates =
-                PerCorner.fromConventionalArray(
-                    table.get("Measured States", *measuredStates.toTypedArray())
-                )
-            measuredPositions =
-                PerCorner.fromConventionalArray(
-                    table.get("Measured Positions", *measuredPositions.toTypedArray())
-                )
-            gyroConnected = table.get("Gyro Connected", false)
-        }
-
-        override fun toLog(table: LogTable?) {
-            table?.put("Gyro Rotation", gyroRotation)
-            table?.put("Measured States", *measuredStates.toTypedArray())
-            table?.put("Measured Positions", *measuredPositions.toTypedArray())
-            table?.put("Gyro Connected", gyroConnected)
-        }
-    }
-
-    fun updateInputs(inputs: Inputs) {
+    fun updateInputs(inputs: DrivetrainInputs) {
         gyro.periodic()
         modules.forEach(SwerveModule::periodic)
 

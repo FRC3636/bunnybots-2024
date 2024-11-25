@@ -17,7 +17,7 @@ object Indexer: Subsystem {
         Robot.Model.PROTOTYPE -> IndexerIOPrototype()
     }
 
-    var inputs = IndexerIO.Inputs()
+    var inputs = LoggedIndexerInputs()
 
     override fun periodic() {
         io.updateInputs(inputs)

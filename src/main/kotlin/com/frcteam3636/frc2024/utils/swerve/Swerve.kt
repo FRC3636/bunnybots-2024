@@ -8,6 +8,11 @@ import edu.wpi.first.units.Distance
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Units.MetersPerSecond
 import edu.wpi.first.units.Velocity
+import edu.wpi.first.util.struct.StructSerializable
+import org.littletonrobotics.junction.LogTable
+import org.team9432.annotation.AsSerialized
+import org.team9432.annotation.FromSerialized
+import org.team9432.annotation.LogTableUtils.kPut
 
 enum class DrivetrainCorner {
     FRONT_LEFT,
@@ -17,7 +22,7 @@ enum class DrivetrainCorner {
 }
 
 data class PerCorner<T>(val frontLeft: T, val backLeft: T, val backRight: T, val frontRight: T) :
-    Collection<T> {
+    Collection<T>, AsSerialized {
     operator fun get(corner: DrivetrainCorner): T =
         when (corner) {
             DrivetrainCorner.FRONT_LEFT -> frontLeft
@@ -46,7 +51,11 @@ data class PerCorner<T>(val frontLeft: T, val backLeft: T, val backRight: T, val
 
     override fun contains(element: T): Boolean = sequence().contains(element)
 
-    companion object {
+    override fun tablePut(table: LogTable, key: String) {
+        table.put("Measured States", *this.map { it as StructSerializable }.toTypedArray())
+    }
+
+    companion object: FromSerialized<PerCorner<T>> {
         fun <T> generate(block: (DrivetrainCorner) -> T): PerCorner<T> =
             PerCorner(
                 frontLeft = block(DrivetrainCorner.FRONT_LEFT),
@@ -55,13 +64,17 @@ data class PerCorner<T>(val frontLeft: T, val backLeft: T, val backRight: T, val
                 frontRight = block(DrivetrainCorner.FRONT_RIGHT),
             )
 
-        internal fun <T> fromConventionalArray(array: Array<T>): PerCorner<T> =
+        fun <T> fromConventionalArray(array: Array<T>): PerCorner<T> =
             PerCorner(
                 frontLeft = array[0],
                 backLeft = array[1],
                 backRight = array[2],
                 frontRight = array[3],
             )
+
+        override fun tableGet(table: LogTable, key: String, defaultValue: PerCorner<*>) {
+
+        }
     }
 }
 
