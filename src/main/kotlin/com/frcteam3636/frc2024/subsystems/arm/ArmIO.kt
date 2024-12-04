@@ -16,7 +16,6 @@ import edu.wpi.first.units.Units.*
 import edu.wpi.first.units.Voltage
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DutyCycleEncoder
-import edu.wpi.first.wpilibj.simulation.FlywheelSim
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
@@ -72,8 +71,11 @@ interface ArmIO{
 
         fun pivotToPosition(position: Measure<Angle>)
 
-    fun setVoltage(volts: Measure<Voltage>)
+        fun setVoltage(volts: Measure<Voltage>)
+
+        fun updatePosition(position: Measure<Angle>)
     }
+
 
     class ArmIOReal: ArmIO{
 
@@ -100,6 +102,11 @@ interface ArmIO{
 
             leftMotor.setPosition(inputs.absoluteEncoderPosition.`in`(Rotations))
             rightMotor.setPosition(inputs.absoluteEncoderPosition.`in`(Rotations))
+        }
+
+        override fun updatePosition(position: Measure<Angle>) {
+            leftMotor.setPosition(position.`in`(Rotations))
+            rightMotor.setPosition(position.`in`(Rotations))
         }
 
         override fun pivotToPosition(position: Measure<Angle>) {
@@ -198,6 +205,10 @@ interface ArmIO{
         override fun setVoltage(volts: Measure<Voltage>) {
             armSim.setInputVoltage(volts.`in`(Volts))
         }
+
+        override fun updatePosition(position: Measure<Angle>) {
+            // no drifting in sim so no need to update
+        }
     }
 
     class ArmIOPrototype: ArmIO {
@@ -209,5 +220,8 @@ interface ArmIO{
         }
 
         override fun setVoltage(volts: Measure<Voltage>) {
+        }
+
+        override fun updatePosition(position: Measure<Angle>) {
         }
     }
