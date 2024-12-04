@@ -6,7 +6,6 @@ import com.frcteam3636.frc2024.subsystems.arm.Arm
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.frc2024.subsystems.indexer.Indexer
 import com.frcteam3636.frc2024.subsystems.intake.Intake
-import com.frcteam3636.frc2024.subsystems.wrist.Wrist
 import com.frcteam3636.version.BUILD_DATE
 import com.frcteam3636.version.DIRTY
 import com.frcteam3636.version.GIT_BRANCH
@@ -125,7 +124,6 @@ object Robot : LoggedRobot() {
         Drivetrain.register()
         Indexer.register()
         Intake.register()
-        Wrist.register()
     }
 
     /** Expose commands for autonomous routines to use and display an auto picker in Shuffleboard. */
