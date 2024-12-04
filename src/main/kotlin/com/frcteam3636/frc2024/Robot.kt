@@ -149,17 +149,7 @@ object Robot : LoggedRobot() {
         }).ignoringDisable(true))
 
 //        //Intake
-//        controller.a()
-//            .debounce(0.150)
-//            .whileTrue(
-//                Intake.outtake()
-//            )
 //
-//        controller.x()
-//            .debounce(0.150)
-//            .whileTrue(
-//                Intake.intake()
-//            )
 //
 //        controller.b()
 //            .debounce(0.150)
@@ -172,49 +162,37 @@ object Robot : LoggedRobot() {
 //            .whileTrue(
 //                Indexer.indexBalloon()
 //            )
+          //Intake
+        controller.rightBumper()
+            .whileTrue(
+                Intake.intake()
+            )
 
 //        //Outtake
-//        controller.leftBumper()
-//            .whileTrue(
-//                Commands.parallel(
-//                    Intake.outtake(),
-//                )
-//            )
-
-        //SysId
         controller.leftBumper()
-            .onTrue(Commands.runOnce(SignalLogger::start))
+            .whileTrue(
+                Commands.parallel(
+                    Intake.outtake(),
+                    Indexer.outtakeBalloon()
+                )
+            )
 
-        controller.rightBumper()
-            .onTrue(Commands.runOnce(SignalLogger::stop))
-
-        controller.y()
-            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward))
-
-        controller.a()
-            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
-
-        controller.b()
-            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kForward))
-
-        controller.x()
-            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kReverse))
 
         //Arm positions
-//        controller.a()
-//            .onTrue(
-//                Arm.moveToPosition(Arm.Position.Stowed)
-//            )
-//
-//        controller.x()
-//            .onTrue(
-//                Arm.moveToPosition(Arm.Position.PickUp)
-//            )
-//
-//        controller.y()
-//            .onTrue(
-//                Arm.moveToPosition(Arm.Position.Lower)
-//            )
+        controller.a()
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.Lower)
+            )
+
+        controller.x()
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.PickUp)
+            )
+
+        controller.y()
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.Stowed)
+            )
     }
 
     /** Add data to the driver station dashboard. */
