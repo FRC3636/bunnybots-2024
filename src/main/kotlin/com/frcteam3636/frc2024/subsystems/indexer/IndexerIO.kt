@@ -52,12 +52,14 @@ class IndexerIOReal : IndexerIO{
         inputs.indexerCurrent = Amps.of(indexerMotor.outputCurrent)
         inputs.position = Rotations.of(indexerMotor.encoder.position)
 
-        when (val colorClass = LimelightHelpers.getClassifierClass("limelight-sensor")) {
-            RED_CLASS -> inputs.balloonState = BalloonState.Red
-            BLUE_CLASS -> inputs.balloonState = BalloonState.Blue
-            NONE_CLASS -> inputs.balloonState = BalloonState.None
-            else -> throw AssertionError("Unknown balloon class: $colorClass")
-        }
+        val colorClass = LimelightHelpers.getClassifierClass("limelight")
+            inputs.balloonState = if (colorClass.contains(RED_CLASS)) { // "0 red"
+                BalloonState.Red
+            } else if (colorClass.contains(BLUE_CLASS)) { // "1 blue"
+                BalloonState.Blue
+            } else { // ""
+                BalloonState.None
+            }
     }
 
     override fun setSpinSpeed(speed: Double) {
