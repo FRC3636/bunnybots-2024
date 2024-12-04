@@ -2,19 +2,19 @@ package com.frcteam3636.frc2024.subsystems.arm
 
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.frc2024.Robot
-import com.frcteam3636.frc2024.subsystems.indexer.IndexerIOPrototype
-import com.frcteam3636.frc2024.subsystems.indexer.IndexerIOReal
-import com.frcteam3636.frc2024.subsystems.indexer.IndexerIOSim
 import edu.wpi.first.units.Angle
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Units.Degrees
 import edu.wpi.first.units.Units.Volts
+import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj2.command.Subsystem
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
 import org.littletonrobotics.junction.Logger
 
+
+private const val SECONDS_BETWEEN_ARM_UPDATES = 0.5
 
 object Arm : Subsystem {
     private var io: ArmIO = when (Robot.model) {
@@ -34,10 +34,17 @@ object Arm : Subsystem {
         Mechanism(io::setVoltage, null, this)
     )
 
+    private var timer = Timer().apply {
+        start()
+    }
+
     override fun periodic() {
         io.updateInputs(inputs)
-
         Logger.processInputs("/Arm", inputs)
+        if (timer.advanceIfElapsed(SECONDS_BETWEEN_ARM_UPDATES) && inputs.absoluteEncoderConnected){
+                io.updatePosition(inputs.absoluteEncoderPosition)
+        }
+
     }
 
     fun moveToPosition(position: Position) =
