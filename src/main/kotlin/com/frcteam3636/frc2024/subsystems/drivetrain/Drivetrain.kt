@@ -1,6 +1,6 @@
 package com.frcteam3636.frc2024.subsystems.drivetrain
 
-import com.frcteam3636.frc2024.CTREMotorControllerId
+import com.frcteam3636.frc2024.CTREDeviceId
 import com.frcteam3636.frc2024.REVMotorControllerId
 import com.frcteam3636.frc2024.Robot
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain.Constants.BRAKE_POSITION
@@ -336,22 +336,22 @@ object Drivetrain : Subsystem, Sendable {
             PerCorner(
                 frontLeft =
                 Pair(
-                    CTREMotorControllerId.FrontLeftDrivingMotor,
+                    CTREDeviceId.FrontLeftDrivingMotor,
                     REVMotorControllerId.FrontLeftTurningMotor
                 ),
                 frontRight =
                 Pair(
-                    CTREMotorControllerId.FrontRightDrivingMotor,
+                    CTREDeviceId.FrontRightDrivingMotor,
                     REVMotorControllerId.FrontRightTurningMotor
                 ),
                 backRight =
                 Pair(
-                    CTREMotorControllerId.BackRightDrivingMotor,
+                    CTREDeviceId.BackRightDrivingMotor,
                     REVMotorControllerId.BackRightTurningMotor
                 ),
                 backLeft =
                 Pair(
-                    CTREMotorControllerId.BackLeftDrivingMotor,
+                    CTREDeviceId.BackLeftDrivingMotor,
                     REVMotorControllerId.BackLeftTurningMotor
                 ),
             )

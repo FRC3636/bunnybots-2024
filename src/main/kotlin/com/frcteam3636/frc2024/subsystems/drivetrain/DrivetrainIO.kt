@@ -1,7 +1,8 @@
 package com.frcteam3636.frc2024.subsystems.drivetrain
 
+import com.frcteam3636.frc2024.CTREDeviceId
+import com.frcteam3636.frc2024.Pigeon2
 import com.frcteam3636.frc2024.utils.swerve.PerCorner
-import com.kauailabs.navx.frc.AHRS
 import edu.wpi.first.math.geometry.Rotation3d
 import edu.wpi.first.math.kinematics.SwerveModulePosition
 import edu.wpi.first.math.kinematics.SwerveModuleState
@@ -44,7 +45,7 @@ abstract class DrivetrainIO {
 
 /** Drivetrain I/O layer that uses real swerve modules along with a NavX gyro. */
 class DrivetrainIOReal(override val modules: PerCorner<out SwerveModule>) : DrivetrainIO() {
-    override val gyro = GyroNavX(AHRS())
+    override val gyro = GyroPigeon(Pigeon2(CTREDeviceId.PigeonGyro))
 
     companion object {
         fun fromKrakenSwerve() =

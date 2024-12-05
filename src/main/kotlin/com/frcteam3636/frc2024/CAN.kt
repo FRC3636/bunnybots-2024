@@ -1,5 +1,6 @@
 package com.frcteam3636.frc2024
 
+import com.ctre.phoenix6.hardware.Pigeon2
 import com.ctre.phoenix6.hardware.TalonFX
 import com.revrobotics.CANSparkFlex
 import com.revrobotics.CANSparkLowLevel
@@ -29,13 +30,15 @@ fun CANSparkMax(id: REVMotorControllerId, type: CANSparkLowLevel.MotorType) =
 fun CANSparkFlex(id: REVMotorControllerId, type: CANSparkLowLevel.MotorType) =
     CANSparkFlex(id.num, type)
 
-enum class CTREMotorControllerId(val num: Int, val bus: String) {
+enum class CTREDeviceId(val num: Int, val bus: String) {
     FrontLeftDrivingMotor(1, "*"),
     BackLeftDrivingMotor(2, "*"),
     BackRightDrivingMotor(3, "*"),
     FrontRightDrivingMotor(4, "*"),
     RightArmMotor(10, "*"),
     LeftArmMotor(11, "*"),
+    PigeonGyro(20, "*"),
 }
 
-fun TalonFX(id: CTREMotorControllerId) = TalonFX(id.num, id.bus)
+fun TalonFX(id: CTREDeviceId) = TalonFX(id.num, id.bus)
+fun Pigeon2(id: CTREDeviceId) = Pigeon2(id.num, id.bus)
