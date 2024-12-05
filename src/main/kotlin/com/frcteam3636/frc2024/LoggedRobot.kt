@@ -1,3 +1,10 @@
+// Why is there a custom version of LoggedRobot? Well, AdvantageKit's check for whether the correct version of
+// WPILib is installed is buggy and we can't contribute a fix because they removed it entirely in the 2025 beta version.
+// The check is called from the *normal* LoggedRobot, but only if running in simulation.
+// This version has that check patched out.
+
+// This file should be removed when updating to AKit 2025.
+
 package org.littletonrobotics.junction
 
 import edu.wpi.first.hal.DriverStationJNI
