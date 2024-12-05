@@ -161,6 +161,7 @@ interface ArmIO{
             -0.142921
         )
 
+        // TODO: Once we know the PID gains, this should be added back.
 //        val pidController = PIDController(ArmIOReal.PID_GAINS)
         var setPoint = 0.0
 
