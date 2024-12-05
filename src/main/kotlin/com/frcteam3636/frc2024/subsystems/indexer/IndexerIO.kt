@@ -11,6 +11,7 @@ import com.revrobotics.CANSparkLowLevel
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.units.Units.*
 import edu.wpi.first.wpilibj.simulation.FlywheelSim
+import org.littletonrobotics.junction.Logger
 import org.team9432.annotation.Logged
 
 enum class BalloonState {
@@ -64,6 +65,7 @@ class IndexerIOReal : IndexerIO{
 
     override fun setSpinSpeed(speed: Double) {
         assert(speed in -1.0..1.0)
+        println("Speed: $speed")
         indexerMotor.set(speed)
     }
 }

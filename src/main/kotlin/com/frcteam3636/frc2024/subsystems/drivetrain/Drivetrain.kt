@@ -208,7 +208,7 @@ object Drivetrain : Subsystem, Sendable {
             desiredChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                 translationInput.x * FREE_SPEED.baseUnitMagnitude() * TRANSLATION_SENSITIVITY,
                 translationInput.y * FREE_SPEED.baseUnitMagnitude() * TRANSLATION_SENSITIVITY,
-                rotationInput.x * TAU * ROTATION_SENSITIVITY,
+                -rotationInput.y * TAU * ROTATION_SENSITIVITY,
                 inputs.gyroRotation.toRotation2d()
             )
         }
@@ -279,10 +279,10 @@ object Drivetrain : Subsystem, Sendable {
     internal object Constants {
         // Translation/rotation coefficient for teleoperated driver controls
         /** Unit: Percent of max robot speed */
-        const val TRANSLATION_SENSITIVITY = 1.0
+        const val TRANSLATION_SENSITIVITY = 0.1
 
         /** Unit: Rotations per second */
-        const val ROTATION_SENSITIVITY = 1.25
+        const val ROTATION_SENSITIVITY = 0.4
 
         private val WHEEL_BASE: Double = Units.inchesToMeters(30.0)
         private val TRACK_WIDTH: Double = Units.inchesToMeters(28.0)
