@@ -5,6 +5,7 @@ import org.littletonrobotics.junction.inputs.LoggableInputs
 import com.frcteam3636.frc2024.CANSparkFlex
 import com.frcteam3636.frc2024.REVMotorControllerId
 import com.frcteam3636.frc2024.Robot
+import com.frcteam3636.frc2024.subsystems.indexer.IndexerIOReal.Constants
 import com.frcteam3636.frc2024.utils.LimelightHelpers
 import com.frcteam3636.frc2024.utils.math.TAU
 import com.revrobotics.CANSparkLowLevel
@@ -37,9 +38,9 @@ interface IndexerIO {
 
 class IndexerIOReal : IndexerIO{
     companion object Constants {
-        const val RED_CLASS  = "red"
-        const val BLUE_CLASS = "blue"
-        const val NONE_CLASS = "none"
+        const val RED_CLASS  = "0 red"
+        const val BLUE_CLASS = "1 blue"
+        const val NONE_CLASS = ""
     }
 
     private var indexerMotor =
@@ -54,13 +55,12 @@ class IndexerIOReal : IndexerIO{
         inputs.position = Rotations.of(indexerMotor.encoder.position)
 
         val colorClass = LimelightHelpers.getClassifierClass("limelight")
-            inputs.balloonState = if (colorClass.contains(RED_CLASS)) { // "0 red"
-                BalloonState.Red
-            } else if (colorClass.contains(BLUE_CLASS)) { // "1 blue"
-                BalloonState.Blue
-            } else { // ""
-                BalloonState.None
-            }
+        inputs.balloonState = when (colorClass) {
+            RED_CLASS -> BalloonState.Red
+            BLUE_CLASS -> BalloonState.Blue
+            NONE_CLASS -> BalloonState.None
+            else -> throw AssertionError("Unknown balloon class: $colorClass")
+        }
     }
 
     override fun setSpinSpeed(speed: Double) {
@@ -96,5 +96,4 @@ class IndexerIOPrototype: IndexerIO {
 
     override fun setSpinSpeed(speed: Double) {
     }
-
 }
