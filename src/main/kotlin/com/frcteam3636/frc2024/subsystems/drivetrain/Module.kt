@@ -109,7 +109,7 @@ interface DrivingMotor {
     var velocity: Double
 }
 
-class DrivingTalon(id: CTREMotorControllerId) : DrivingMotor {
+class DrivingTalon(id: CTREDeviceId) : DrivingMotor {
 
     private val inner = TalonFX(id).apply {
         configurator.apply(Slot0Configs().apply {

@@ -5,7 +5,7 @@ import com.ctre.phoenix6.controls.VoltageOut
 import com.ctre.phoenix6.signals.GravityTypeValue
 import com.ctre.phoenix6.signals.InvertedValue
 import com.ctre.phoenix6.signals.NeutralModeValue
-import com.frcteam3636.frc2024.CTREMotorControllerId
+import com.frcteam3636.frc2024.CTREDeviceId
 import com.frcteam3636.frc2024.Robot
 import com.frcteam3636.frc2024.TalonFX
 import com.frcteam3636.frc2024.utils.math.*
@@ -20,52 +20,26 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim
 import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.inputs.LoggableInputs
+import org.team9432.annotation.Logged
 
+@Logged
+open class ArmInputs {
+    var rightPosition = Radians.zero()!!
+    var leftPosition = Radians.zero()!!
+    var position = Radians.zero()!!
+
+    var absoluteEncoderPosition = Radians.zero()!!
+
+    var rightCurrent = Volts.zero()!!
+    var leftCurrent = Volts.zero()!!
+
+    var rightVelocity = RadiansPerSecond.zero()!!
+    var leftVelocity = RadiansPerSecond.zero()!!
+
+    var absoluteEncoderConnected = false
+}
 
 interface ArmIO{
-        class ArmInputs : LoggableInputs {
-
-            var rightPosition = Radians.zero()!!
-            var leftPosition = Radians.zero()!!
-            var position = Radians.zero()!!
-
-            var absoluteEncoderPosition = Radians.zero()!!
-
-            var rightCurrent = Volts.zero()!!
-            var leftCurrent = Volts.zero()!!
-
-            var rightVelocity = RadiansPerSecond.zero()!!
-            var leftVelocity = RadiansPerSecond.zero()!!
-
-            var absoluteEncoderConnected = false
-
-
-            override fun toLog(table: LogTable) {
-                table.put("Right Arm Motor Position", rightPosition)
-                table.put("Left Arm Motor Position", leftPosition)
-
-                table.put("Right Arm Motor Current", rightCurrent)
-                table.put("Left Arm Motor Current", leftCurrent)
-
-                table.put("Right Arm Motor Velocity", rightVelocity)
-                table.put("Left Arm Motor Velocity", leftVelocity)
-
-                table.put("Absolute Encoder Connected",absoluteEncoderConnected )
-            }
-
-            override fun fromLog(table: LogTable) {
-                rightPosition = table.get("Right Arm Motor Position", rightPosition)
-                leftPosition = table.get("Left Arm Motor Position", leftPosition)
-
-                rightCurrent = table.get("Right Arm Motor Current", rightCurrent)
-                leftCurrent = table.get("Left Arm Motor Current", leftCurrent)
-
-                rightVelocity = table.get("Right Arm Motor Velocity", rightVelocity)
-                leftVelocity = table.get("Left Arm Motor Velocity", leftVelocity)
-
-                absoluteEncoderConnected = table.get("Absolute Encoder Connected", absoluteEncoderConnected)
-            }
-        }
 
         fun updateInputs(inputs: ArmInputs)
 
@@ -79,13 +53,13 @@ interface ArmIO{
 
     class ArmIOReal: ArmIO{
 
-        private val leftMotor = TalonFX(CTREMotorControllerId.LeftArmMotor)
+        private val leftMotor = TalonFX(CTREDeviceId.LeftArmMotor)
 
-        private val rightMotor = TalonFX(CTREMotorControllerId.RightArmMotor)
+        private val rightMotor = TalonFX(CTREDeviceId.RightArmMotor)
 
         private val absoluteEncoder = DutyCycleEncoder(DigitalInput(8))
 
-        override fun updateInputs(inputs: ArmIO.ArmInputs) {
+        override fun updateInputs(inputs: ArmInputs) {
             inputs.position = Rotations.of(absoluteEncoder.absolutePosition)
             inputs.absoluteEncoderConnected = absoluteEncoder.isConnected
 
@@ -179,7 +153,7 @@ interface ArmIO{
         val armSim = SingleJointedArmSim(
             DCMotor.getKrakenX60(1),
             3.0,
-            0.0301907551,
+            0.244,
             0.331414,
             -0.142921,
             2.32814365359,
@@ -187,15 +161,16 @@ interface ArmIO{
             -0.142921
         )
 
-        val pidController = PIDController(ArmIOReal.PID_GAINS)
+//        val pidController = PIDController(ArmIOReal.PID_GAINS)
         var setPoint = 0.0
 
-        override fun updateInputs(inputs: ArmIO.ArmInputs) {
+        override fun updateInputs(inputs: ArmInputs) {
             armSim.update(Robot.period)
             inputs.rightVelocity = RadiansPerSecond.of(armSim.velocityRadPerSec)
             inputs.leftVelocity = RadiansPerSecond.of(armSim.velocityRadPerSec)
-            val pidVoltage = pidController.calculate(inputs.position.`in`(Radians),setPoint)
-            armSim.setInputVoltage(pidVoltage)
+            inputs.position = Radians.of(armSim.angleRads)
+//            val pidVoltage = pidController.calculate(inputs.position.`in`(Radians),setPoint)
+//            armSim.setInputVoltage(pidVoltage)
         }
 
         override fun pivotToPosition(position: Measure<Angle>) {
@@ -204,6 +179,7 @@ interface ArmIO{
 
         override fun setVoltage(volts: Measure<Voltage>) {
             armSim.setInputVoltage(volts.`in`(Volts))
+            Logger.recordOutput("/Arm/OutVolt", volts)
         }
 
         override fun updatePosition(position: Measure<Angle>) {
@@ -213,7 +189,7 @@ interface ArmIO{
 
     class ArmIOPrototype: ArmIO {
         //placeholder
-        override fun updateInputs(inputs: ArmIO.ArmInputs) {
+        override fun updateInputs(inputs: ArmInputs) {
         }
 
         override fun pivotToPosition(position: Measure<Angle>) {

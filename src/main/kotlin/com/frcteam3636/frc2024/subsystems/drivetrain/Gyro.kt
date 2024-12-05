@@ -1,5 +1,8 @@
 package com.frcteam3636.frc2024.subsystems.drivetrain
 
+import com.ctre.phoenix6.BaseStatusSignal
+import com.ctre.phoenix6.configs.Pigeon2Configuration
+import com.ctre.phoenix6.hardware.Pigeon2
 import com.frcteam3636.frc2024.Robot
 import com.frcteam3636.frc2024.utils.swerve.PerCorner
 import com.frcteam3636.frc2024.utils.swerve.translation2dPerSecond
@@ -27,18 +30,38 @@ class GyroNavX(private val ahrs: AHRS) : Gyro {
     private var offset: Rotation3d = Rotation3d()
 
     init {
-        Logger.recordOutput("Gyro/Offset", offset)
+        Logger.recordOutput("NavXGyro/Offset", offset)
     }
 
     override var rotation: Rotation3d
         get() = offset + ahrs.rotation3d
         set(goal) {
             offset = goal - ahrs.rotation3d
-            Logger.recordOutput("Gyro/Offset", offset)
+            Logger.recordOutput("NavXGyro/Offset", offset)
         }
 
     override val connected
         get() = ahrs.isConnected
+}
+
+class  GyroPigeon(private val pigeon: Pigeon2) : Gyro {
+
+    private var offset: Rotation3d = Rotation3d()
+
+    init {
+        Logger.recordOutput("PigeonGyro/Offset", offset)
+        BaseStatusSignal.setUpdateFrequencyForAll(100.0, pigeon.yaw, pigeon.pitch, pigeon.roll);
+    }
+
+    override var rotation: Rotation3d
+        get() = offset + pigeon.rotation3d
+        set(goal) {
+            offset = goal - pigeon.rotation3d
+            Logger.recordOutput("PigeonGyro/Offset", offset)
+        }
+
+    override val connected
+        get() = pigeon.yaw.status.isOK
 }
 
 class GyroSim(private val modules: PerCorner<SwerveModule>) : Gyro {
