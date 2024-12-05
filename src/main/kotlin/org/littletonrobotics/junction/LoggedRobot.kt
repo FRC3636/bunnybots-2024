@@ -32,7 +32,7 @@ import java.lang.management.ManagementFactory
  * periodic() functions from the base class are called on an interval by a
  * Notifier instance.
  */
-open class MyLoggedRobot protected constructor(period: Double = defaultPeriodSecs) :
+open class PatchedLoggedRobot protected constructor(period: Double = defaultPeriodSecs) :
     IterativeRobotBase(period) {
     private val notifier = NotifierJNI.initializeNotifier()
     private val periodUs = (period * 1000000).toLong()

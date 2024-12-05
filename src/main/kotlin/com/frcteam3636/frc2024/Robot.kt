@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import org.littletonrobotics.junction.LogFileUtil
 import org.littletonrobotics.junction.Logger
-import org.littletonrobotics.junction.MyLoggedRobot
+import org.littletonrobotics.junction.PatchedLoggedRobot
 import org.littletonrobotics.junction.networktables.NT4Publisher
 import org.littletonrobotics.junction.wpilog.WPILOGReader
 import org.littletonrobotics.junction.wpilog.WPILOGWriter
@@ -41,7 +41,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter
  * update the `Main.kt` file in the project. (If you use the IDE's Rename or Move refactorings when
  * renaming the object or package, it will get changed everywhere.)
  */
-object Robot : MyLoggedRobot() {
+object Robot : PatchedLoggedRobot() {
     private val controller = CommandXboxController(2)
     private val joystickLeft = Joystick(0)
     private val joystickRight = Joystick(1)
