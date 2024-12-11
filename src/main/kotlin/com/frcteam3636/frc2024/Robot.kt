@@ -104,7 +104,7 @@ object Robot : PatchedLoggedRobot() {
             // Enables power distribution logging
             if (model == Model.COMPETITION) {
                 PowerDistribution(
-                    1, PowerDistribution.ModuleType.kRev
+                    62, PowerDistribution.ModuleType.kRev
                 )
             } else {
                 PowerDistribution(
