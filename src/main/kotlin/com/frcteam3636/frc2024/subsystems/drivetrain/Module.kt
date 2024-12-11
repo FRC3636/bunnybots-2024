@@ -138,12 +138,12 @@ class DrivingTalon(id: CTREDeviceId) : DrivingMotor {
     }
 
     override val position: Measure<Distance>
-        get() = Meters.of(inner.position.value * DRIVING_GEAR_RATIO_TALON * WHEEL_CIRCUMFERENCE)
+        get() = Meters.of(inner.position.value * DRIVING_GEAR_RATIO_TALON * WHEEL_CIRCUMFERENCE.`in`(Meters))
 
     override var velocity: Measure<Velocity<Distance>>
-        get() = MetersPerSecond.of(inner.velocity.value * DRIVING_GEAR_RATIO_TALON * WHEEL_CIRCUMFERENCE)
+        get() = MetersPerSecond.of(inner.velocity.value * DRIVING_GEAR_RATIO_TALON * WHEEL_CIRCUMFERENCE.`in`(Meters))
         set(value) {
-            inner.setControl(VelocityTorqueCurrentFOC(value.`in`(MetersPerSecond) / DRIVING_GEAR_RATIO_TALON / WHEEL_CIRCUMFERENCE))
+            inner.setControl(VelocityTorqueCurrentFOC(value.`in`(MetersPerSecond) / DRIVING_GEAR_RATIO_TALON / WHEEL_CIRCUMFERENCE.`in`(Meters)))
         }
 }
 
@@ -160,8 +160,8 @@ class DrivingSparkMAX(val id: REVMotorControllerId) : DrivingMotor {
     init {
         inner.encoder.apply {
             // convert native units of rotations and RPM to meters and meters per second
-            positionConversionFactor =  WHEEL_CIRCUMFERENCE / DRIVING_GEAR_RATIO_NEO
-            velocityConversionFactor = WHEEL_CIRCUMFERENCE / DRIVING_GEAR_RATIO_NEO  / 60
+            positionConversionFactor =  WHEEL_CIRCUMFERENCE.`in`(Meters) / DRIVING_GEAR_RATIO_NEO
+            velocityConversionFactor = WHEEL_CIRCUMFERENCE.`in`(Meters) / DRIVING_GEAR_RATIO_NEO  / 60
         }
 
         inner.pidController.apply {
