@@ -68,12 +68,15 @@ deploy {
             // or from command line. If not found an exception will be thrown.
             team = frc.getTeamOrDefault(3636)
             debug = frc.getDebugOrDefault(false)
+
+
         }
 
         roborio.artifacts {
             register<FRCJavaArtifact>("frcJava") {
                 jvmArgs.add("-ea") // Remove this flag during comp to disable asserts
                 setJarTask(tasks.jar)
+                dependsOn(tasks.assemble)
             }
 
             register<FileTreeArtifact>("frcStaticFileDeploy") {
