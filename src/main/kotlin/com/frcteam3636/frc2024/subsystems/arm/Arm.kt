@@ -23,7 +23,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-private const val SECONDS_BETWEEN_ARM_UPDATES = 0.5
+private const val SECONDS_BETWEEN_ARM_UPDATES = 2.0
 
 object Arm : Subsystem {
     private var io: ArmIO = when (Robot.model) {

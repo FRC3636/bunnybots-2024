@@ -67,7 +67,7 @@ object Robot : PatchedLoggedRobot() {
         )
 
         // Joysticks are likely to be missing in simulation, which usually isn't a problem.
-        DriverStation.silenceJoystickConnectionWarning(!isReal())
+        DriverStation.silenceJoystickConnectionWarning(true) // FIXME: re-add before comp
 
         configureAdvantageKit()
         configureSubsystems()
