@@ -6,6 +6,9 @@ import com.frcteam3636.frc2024.subsystems.arm.Arm
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.frc2024.subsystems.indexer.Indexer
 import com.frcteam3636.frc2024.subsystems.intake.Intake
+import com.frcteam3636.frc2024.utils.Elastic
+import com.frcteam3636.frc2024.utils.ElasticNotification
+import com.frcteam3636.frc2024.utils.NotificationLevel
 import com.frcteam3636.version.BUILD_DATE
 import com.frcteam3636.version.DIRTY
 import com.frcteam3636.version.GIT_BRANCH
@@ -28,6 +31,9 @@ import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.networktables.NT4Publisher
 import org.littletonrobotics.junction.wpilog.WPILOGReader
 import org.littletonrobotics.junction.wpilog.WPILOGWriter
+import java.io.File
+import kotlin.io.path.Path
+import kotlin.io.path.exists
 
 
 /**
@@ -85,6 +91,15 @@ object Robot : LoggedRobot() {
 
         if (isReal()) {
             Logger.addDataReceiver(WPILOGWriter()) // Log to a USB stick
+            if (!Path("/U").exists()) {
+                Elastic.sendAlert(
+                    ElasticNotification(
+                        "logging USB stick not plugged into radio",
+                        "You gotta plug in a usb stick yo",
+                        NotificationLevel.WARNING
+                    )
+                )
+            }
             Logger.addDataReceiver(NT4Publisher()) // Publish data to NetworkTables
             // Enables power distribution logging
             if (model == Model.COMPETITION) {
