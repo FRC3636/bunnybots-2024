@@ -1,0 +1,23 @@
+{
+  "NTProvider": {
+    "types": {
+      "/AdvantageKit/RealOutputs//Arm/Mechanism": "Mechanism2d",
+      "/AdvantageKit/RealOutputs/Indexer Angle": "Mechanism2d",
+      "/AdvantageKit/RealOutputs/Intake Angle": "Mechanism2d",
+      "/FMSInfo": "FMSInfo",
+      "/Shuffleboard/Teleoperated/Auto Chooser": "String Chooser",
+      "/Shuffleboard/Teleoperated/Field": "Field2d",
+      "/SmartDashboard/Intake Angle": "Mechanism2d"
+    },
+    "windows": {
+      "/SmartDashboard/Intake Angle": {
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  }
+}
