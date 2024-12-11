@@ -42,7 +42,7 @@ data class ElasticNotification @JvmOverloads constructor(
     @field:JsonProperty("title") var title: String,
     @field:JsonProperty("description") var description: String,
     @field:JsonProperty("level") var level: NotificationLevel = NotificationLevel.ERROR,
-    @field:JsonProperty("displayTime") var displayTimeMillis: Int = 3000,
+    @field:JsonProperty("displayTime") var displayTimeMillis: Int = 10000,
     @field:JsonProperty("width") private val width: Double = 350.0,
     @field:JsonProperty("height") private val height: Double = -1.0
 ) {
@@ -63,7 +63,7 @@ data class ElasticNotification @JvmOverloads constructor(
         title,
         description,
         level,
-        3000,
+        10000,
         width,
         height
     )
