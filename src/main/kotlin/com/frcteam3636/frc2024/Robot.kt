@@ -204,47 +204,46 @@ object Robot : PatchedLoggedRobot() {
 //            )
 
         //SysId
-        controller.leftBumper()
-            .onTrue(Commands.runOnce(SignalLogger::start))
-
-        controller.rightBumper()
-            .onTrue(Commands.runOnce(SignalLogger::stop))
-
-        controller.y()
-            .whileTrue(
-                Commands.sequence(
-                    Commands.print("Starting quasistatic"),
-                    Arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
-                )
-                    .until(Arm.inSysIdUpperRange.negate())
-            )
-
-
-        controller.a()
-            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
-
-        controller.rightBumper()
-            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kForward)
-//            .until(Arm.inSysIdUpperRange.negate()))
-            )
-        controller.leftBumper()
-            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kReverse))
-
-        //Arm positions1
-//        controller.a()
-//            .onTrue(
-//                Arm.moveToPosition(Arm.Position.Stowed)
-//            )
+//        controller.leftBumper()
+//            .onTrue(Commands.runOnce(SignalLogger::start))
 //
-//        controller.x()
-//            .onTrue(
-//                Arm.moveToPosition(Arm.Position.PickUp)
-//            )
+//        controller.rightBumper()
+//            .onTrue(Commands.runOnce(SignalLogger::stop))
 //
 //        controller.y()
-//            .onTrue(
-//                Arm.moveToPosition(Arm.Position.Lower)
+//            .whileTrue(
+//                Commands.sequence(
+//                    Commands.print("Starting quasistatic"),
+//                    Arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+//                )
 //            )
+//
+//
+//        controller.a()
+//            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
+//
+//        controller.x()
+//            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kReverse))
+//
+//        controller.b()
+//            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kForward))
+
+//        Arm positions
+        controller.a()
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.Stowed)
+            )
+
+        controller.x()
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.PickUp)
+            )
+
+
+        controller.y()
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.Lower)
+            )
     }
 
     /** Add data to the driver station dashboard. */

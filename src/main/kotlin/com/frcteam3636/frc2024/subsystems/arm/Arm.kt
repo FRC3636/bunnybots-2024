@@ -2,9 +2,6 @@ package com.frcteam3636.frc2024.subsystems.arm
 
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.frc2024.Robot
-import com.frcteam3636.frc2024.subsystems.intake.Intake
-import com.frcteam3636.frc2024.subsystems.intake.Intake.indexerAngleLigament
-import com.frcteam3636.frc2024.subsystems.intake.Intake.intakeAngleLigament
 import edu.wpi.first.units.Angle
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Units.Degrees
@@ -16,13 +13,10 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d
 import edu.wpi.first.wpilibj.util.Color
 import edu.wpi.first.wpilibj.util.Color8Bit
 import edu.wpi.first.wpilibj2.command.Subsystem
-import edu.wpi.first.wpilibj2.command.button.Trigger
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
 import org.littletonrobotics.junction.Logger
-import kotlin.math.cos
-import kotlin.math.sin
 
 
 private const val SECONDS_BETWEEN_ARM_UPDATES = 1.0
@@ -55,12 +49,12 @@ object Arm : Subsystem {
         Mechanism(io::setVoltage, null, this)
     )
 
-    var inSysIdUpperRange = Trigger {
-        val lowerLimit = Radians.of(3.167)
-        inputs.position < lowerLimit
-                && inputs.leftPosition < lowerLimit
-//                && inputs.rightPosition < lowerLimit
-    }
+//    var inSysIdUpperRange = Trigger {
+//        val lowerLimit = Radians.of(3.167)
+//        inputs.position < lowerLimit
+//                && inputs.leftPosition < lowerLimit
+////                && inputs.rightPosition < lowerLimit
+//    }
 
     private var timer = Timer().apply {
         start()
@@ -69,11 +63,13 @@ object Arm : Subsystem {
     override fun periodic() {
         io.updateInputs(inputs)
         Logger.processInputs("/Arm", inputs)
-        armAngleLigament.angle = inputs.position.`in`(Degrees)
-        armWristAngleLigament.angle = 90.0 - inputs.position.`in`(Degrees)
+        armAngleLigament.angle = inputs.leftPosition.`in`(Degrees)
+        armWristAngleLigament.angle = 90.0 - inputs.leftPosition.`in`(Degrees)
 
-        if (timer.advanceIfElapsed(SECONDS_BETWEEN_ARM_UPDATES) && inputs.absoluteEncoderConnected){
-                io.updatePosition(inputs.position)
+        if (timer.advanceIfElapsed(SECONDS_BETWEEN_ARM_UPDATES)
+            && inputs.leftAbsoluteEncoderConnected
+            && inputs.rightAbsoluteEncoderConnected) {
+            io.updatePosition(left = inputs.leftPosition, right = inputs.rightPosition)
         }
 
         Logger.recordOutput("/Arm/Mechanism", mechanism)
@@ -84,7 +80,7 @@ object Arm : Subsystem {
         startEnd({
             io.pivotToPosition(position.angle)
         }, {
-            io.pivotToPosition(inputs.position)
+            io.pivotToPosition(inputs.leftPosition)
         })!!
 
     fun sysIdQuasistatic(direction: Direction) =
@@ -96,6 +92,6 @@ object Arm : Subsystem {
     enum class Position(val angle: Measure<Angle>) {
         Stowed(Radians.of(0.0)),
         PickUp(Radians.of(-0.6)),
-        Lower(Radians.of(0.0))
+        Lower(Radians.of(-0.4))
     }
 }

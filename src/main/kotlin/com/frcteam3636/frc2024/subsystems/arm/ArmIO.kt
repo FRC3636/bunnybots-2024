@@ -22,9 +22,10 @@ import org.team9432.annotation.Logged
 
 @Logged
 open class ArmInputs {
-    var rightPosition = Radians.zero()!!
+    var rightRelativePosition = Radians.zero()!!
+    var leftRelativePosition = Radians.zero()!!
     var leftPosition = Radians.zero()!!
-    var position = Radians.zero()!!
+    var rightPosition = Radians.zero()!!
 
     var rightCurrent = Volts.zero()!!
     var leftCurrent = Volts.zero()!!
@@ -32,7 +33,8 @@ open class ArmInputs {
     var rightVelocity = RadiansPerSecond.zero()!!
     var leftVelocity = RadiansPerSecond.zero()!!
 
-    var absoluteEncoderConnected = false
+    var leftAbsoluteEncoderConnected = false
+    var rightAbsoluteEncoderConnected = false
 }
 
 interface ArmIO {
@@ -43,7 +45,7 @@ interface ArmIO {
 
         fun setVoltage(volts: Measure<Voltage>)
 
-        fun updatePosition(position: Measure<Angle>)
+        fun updatePosition(left: Measure<Angle>, right: Measure<Angle>)
 }
 
 
@@ -53,48 +55,53 @@ class ArmIOReal: ArmIO {
 
     private val rightMotor = TalonFX(CTREDeviceId.RightArmMotor)
 
-    private val absoluteEncoder = DutyCycleEncoder(DigitalInput(0))
+    private val leftAbsoluteEncoder = DutyCycleEncoder(DigitalInput(0))
+    private val rightAbsoluteEncoder = DutyCycleEncoder(DigitalInput(1))
 
     override fun updateInputs(inputs: ArmInputs) {
-        val unoffsetPosition = Rotations.of(-absoluteEncoder.get() * CHAIN_GEAR_RATIO)
-        inputs.position = unoffsetPosition + ZERO_OFFSET
-        Logger.recordOutput("/Arm/Required Offset", unoffsetPosition.negate())
-//        inputs.position = Rotations.of(-absoluteEncoder.absolutePosition) + ZERO_OFFSET
-        inputs.absoluteEncoderConnected = absoluteEncoder.isConnected
+        val offsetlessLeftPosition = Rotations.of(-leftAbsoluteEncoder.get() * CHAIN_GEAR_RATIO)
+        inputs.leftPosition = offsetlessLeftPosition + LEFT_ZERO_OFFSET
+        Logger.recordOutput("/Arm/Required Left Offset", offsetlessLeftPosition.negate())
 
-        inputs.leftPosition = Rotations.of(leftMotor.position.value)
+        val offsetlessRightPosition = Rotations.of(-rightAbsoluteEncoder.get() * CHAIN_GEAR_RATIO)
+        inputs.rightPosition = offsetlessLeftPosition + RIGHT_ZERO_OFFSET
+        Logger.recordOutput("/Arm/Required Right Offset", offsetlessRightPosition.negate())
+
+        inputs.leftRelativePosition = Rotations.of(leftMotor.position.value)
+        inputs.rightRelativePosition = Rotations.of(rightMotor.position.value)
+
+        inputs.leftAbsoluteEncoderConnected = leftAbsoluteEncoder.isConnected
+        inputs.rightAbsoluteEncoderConnected = rightAbsoluteEncoder.isConnected
+
         inputs.leftVelocity = RotationsPerSecond.of(leftMotor.velocity.value)
-
-
-        inputs.rightPosition = Rotations.of(rightMotor.position.value)
         inputs.rightVelocity = RotationsPerSecond.of(rightMotor.position.value)
 
-        inputs.rightCurrent = Volts.of(leftMotor.motorVoltage.value)
+        inputs.leftCurrent = Volts.of(leftMotor.motorVoltage.value)
+        inputs.rightCurrent = Volts.of(rightMotor.motorVoltage.value)
     }
 
-    override fun updatePosition(position: Measure<Angle>) {
-        leftMotor.setPosition(position.`in`(Rotations))
-        rightMotor.setPosition(position.`in`(Rotations))
+    override fun updatePosition(left: Measure<Angle>, right: Measure<Angle>) {
+        leftMotor.setPosition(left.`in`(Rotations))
+        rightMotor.setPosition(right.`in`(Rotations))
     }
 
+    private val pivotControl = MotionMagicTorqueCurrentFOC(0.0)
     override fun pivotToPosition(position: Measure<Angle>) {
-        val resolvedPosition = position
-        Logger.recordOutput("Shooter/Pivot/Position Setpoint", resolvedPosition)
+        Logger.recordOutput("Shooter/Pivot/Position Setpoint", position)
 
-        val control = MotionMagicTorqueCurrentFOC(0.0).apply {
+        val control = pivotControl.apply {
             Slot = 0
-            Position = resolvedPosition.`in`(Rotations)
+            Position = position.`in`(Rotations)
         }
         leftMotor.setControl(control)
-//        rightMotor.setControl(control)
-
+        rightMotor.setControl(control)
     }
 
     override fun setVoltage(volts: Measure<Voltage>) {
         assert(volts in Volts.of(-12.0)..Volts.of(12.0))
         Logger.recordOutput("/Arm/Voltage", volts)
         val control = VoltageOut(volts.`in`(Volts))
-        leftMotor.setControl(control) // TODO: fix gearbox
+//        leftMotor.setControl(control)
 //        rightMotor.setControl(control)
     }
 
@@ -109,13 +116,6 @@ class ArmIOReal: ArmIO {
                 FeedbackRotorOffset = 0.0
             }
 
-            Slot0.apply {
-                pidGains = PID_GAINS
-                motorFFGains = FF_GAINS
-                GravityType = GravityTypeValue.Arm_Cosine
-                kG = GRAVITY_GAIN
-            }
-
             MotionMagic.apply {
                 MotionMagicCruiseVelocity = PROFILE_VELOCITY
                 MotionMagicAcceleration = PROFILE_ACCELERATION
@@ -128,12 +128,26 @@ class ArmIOReal: ArmIO {
         }
 
         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive
+        config.Slot0.apply {
+            pidGains = LEFT_PID_GAINS
+            motorFFGains = LEFT_FF_GAINS
+            GravityType = GravityTypeValue.Arm_Cosine
+            kG = LEFT_GRAVITY_GAIN
+        }
         leftMotor.configurator.apply(
             config
         )
 
         config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive
+        config.Slot0.apply {
+            pidGains = RIGHT_PID_GAINS
+            motorFFGains = RIGHT_FF_GAINS
+            GravityType = GravityTypeValue.Arm_Cosine
+            kG = RIGHT_GRAVITY_GAIN
+        }
         rightMotor.configurator.apply(config)
+
+
     }
 
 
@@ -148,14 +162,18 @@ class ArmIOReal: ArmIO {
 
         private const val CHAIN_GEAR_RATIO = 1.0 / 3.0
         private const val GEAR_RATIO = 125.0 / CHAIN_GEAR_RATIO
-        val PID_GAINS = PIDGains(64.857, 0.0, 20.319) //placeholders
-        val FF_GAINS = MotorFFGains(0.33157, 14.214, 0.15033) //placeholders
-        private const val GRAVITY_GAIN = 0.28233
+        val LEFT_PID_GAINS = PIDGains(64.138, 0.0, 59.411)
+        val LEFT_FF_GAINS = MotorFFGains(0.3289, 42.817, 0.39107)
+        private const val LEFT_GRAVITY_GAIN = 0.17119
+        val RIGHT_PID_GAINS = PIDGains(63.339, 0.0, 59.134)
+        val RIGHT_FF_GAINS = MotorFFGains(0.29364, 43.77, 0.34751)
+        private const val RIGHT_GRAVITY_GAIN = 0.12181
         private const val PROFILE_ACCELERATION = 1.0
         private const val PROFILE_JERK = 1.0
         private const val PROFILE_VELOCITY = 1.0
 
-        val ZERO_OFFSET = Radians.of(1.01)
+        val LEFT_ZERO_OFFSET = Radians.of(1.05)
+        val RIGHT_ZERO_OFFSET = Radians.of(1.05)
     }
 
 }
@@ -180,7 +198,8 @@ class ArmIOSim : ArmIO {
         armSim.update(Robot.period)
         inputs.rightVelocity = RadiansPerSecond.of(armSim.velocityRadPerSec)
         inputs.leftVelocity = RadiansPerSecond.of(armSim.velocityRadPerSec)
-        inputs.position = Radians.of(armSim.angleRads)
+        inputs.leftPosition = Radians.of(armSim.angleRads)
+        inputs.rightPosition = Radians.of(armSim.angleRads)
 //            val pidVoltage = pidController.calculate(inputs.position.`in`(Radians),setPoint)
 //            armSim.setInputVoltage(pidVoltage)
     }
@@ -194,7 +213,7 @@ class ArmIOSim : ArmIO {
         Logger.recordOutput("/Arm/OutVolt", volts)
     }
 
-    override fun updatePosition(position: Measure<Angle>) {
+    override fun updatePosition(left: Measure<Angle>, right: Measure<Angle>) {
         // no drifting in sim so no need to update
     }
 }
@@ -210,6 +229,6 @@ class ArmIOPrototype: ArmIO {
     override fun setVoltage(volts: Measure<Voltage>) {
     }
 
-    override fun updatePosition(position: Measure<Angle>) {
+    override fun updatePosition(left: Measure<Angle>, right: Measure<Angle>) {
     }
 }
