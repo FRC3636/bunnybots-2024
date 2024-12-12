@@ -87,6 +87,13 @@ object Arm : Subsystem {
             io.pivotToPosition(inputs.position)
         })!!
 
+    fun setSpeed(percent: Double) = 
+        startEnd({
+            io.setVoltage(Volts.of(percent * 12.0))
+        }, {
+            io.setVoltage(Volts.of(0.0))
+        })!!
+
     fun sysIdQuasistatic(direction: Direction) =
         sysID.quasistatic(direction)!!
 
