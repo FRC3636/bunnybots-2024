@@ -204,32 +204,37 @@ object Robot : PatchedLoggedRobot() {
 //            )
 
         //SysId
+//        controller.leftBumper()
+//            .onTrue(Commands.runOnce(SignalLogger::start))
+//
+//        controller.rightBumper()
+//            .onTrue(Commands.runOnce(SignalLogger::stop))
+//
+//        controller.y()
+//            .whileTrue(
+//                Commands.sequence(
+//                    Commands.print("Starting quasistatic"),
+//                    Arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+//                )
+//                    .until(Arm.inSysIdUpperRange.negate())
+//            )
+//
+//
+//        controller.a()
+//            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
+//
+//        controller.rightBumper()
+//            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kForward)
+////            .until(Arm.inSysIdUpperRange.negate()))
+//            )
+//        controller.leftBumper()
+//            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kReverse))
+//
+
         controller.leftBumper()
-            .onTrue(Commands.runOnce(SignalLogger::start))
-
+            .whileTrue(Arm.setSpeed(0.3))
         controller.rightBumper()
-            .onTrue(Commands.runOnce(SignalLogger::stop))
-
-        controller.y()
-            .whileTrue(
-                Commands.sequence(
-                    Commands.print("Starting quasistatic"),
-                    Arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
-                )
-                    .until(Arm.inSysIdUpperRange.negate())
-            )
-
-
-        controller.a()
-            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
-
-        controller.rightBumper()
-            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kForward)
-//            .until(Arm.inSysIdUpperRange.negate()))
-            )
-        controller.leftBumper()
-            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kReverse))
-
+            .whileTrue(Arm.setSpeed(-0.3))
         //Arm positions1
 //        controller.a()
 //            .onTrue(

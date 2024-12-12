@@ -95,7 +95,8 @@ class ArmIOReal: ArmIO {
         Logger.recordOutput("/Arm/Voltage", volts)
         val control = VoltageOut(volts.`in`(Volts))
         leftMotor.setControl(control) // TODO: fix gearbox
-//        rightMotor.setControl(control)
+        control.Output *= 1.0085146641438032
+        rightMotor.setControl(control)
     }
 
     init {

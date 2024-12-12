@@ -72,9 +72,9 @@ object Arm : Subsystem {
         armAngleLigament.angle = inputs.position.`in`(Degrees)
         armWristAngleLigament.angle = 90.0 - inputs.position.`in`(Degrees)
 
-        if (timer.advanceIfElapsed(SECONDS_BETWEEN_ARM_UPDATES) && inputs.absoluteEncoderConnected){
-                io.updatePosition(inputs.position)
-        }
+//        if (timer.advanceIfElapsed(SECONDS_BETWEEN_ARM_UPDATES) && inputs.absoluteEncoderConnected){
+//                io.updatePosition(inputs.position)
+//        }
 
         Logger.recordOutput("/Arm/Mechanism", mechanism)
 
