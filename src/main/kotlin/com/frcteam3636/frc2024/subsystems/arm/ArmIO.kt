@@ -17,9 +17,7 @@ import edu.wpi.first.units.Voltage
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DutyCycleEncoder
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim
-import org.littletonrobotics.junction.LogTable
 import org.littletonrobotics.junction.Logger
-import org.littletonrobotics.junction.inputs.LoggableInputs
 import org.team9432.annotation.Logged
 
 @Logged
@@ -27,8 +25,6 @@ open class ArmInputs {
     var rightPosition = Radians.zero()!!
     var leftPosition = Radians.zero()!!
     var position = Radians.zero()!!
-
-    var absoluteEncoderPosition = Radians.zero()!!
 
     var rightCurrent = Volts.zero()!!
     var leftCurrent = Volts.zero()!!
@@ -60,10 +56,11 @@ class ArmIOReal: ArmIO {
     private val absoluteEncoder = DutyCycleEncoder(DigitalInput(0))
 
     override fun updateInputs(inputs: ArmInputs) {
-        inputs.position = Rotations.of(absoluteEncoder.absolutePosition)
+        val unoffsetPosition = Rotations.of(-absoluteEncoder.get() * CHAIN_GEAR_RATIO)
+        inputs.position = unoffsetPosition + ZERO_OFFSET
+        Logger.recordOutput("/Arm/Required Offset", unoffsetPosition.negate())
+//        inputs.position = Rotations.of(-absoluteEncoder.absolutePosition) + ZERO_OFFSET
         inputs.absoluteEncoderConnected = absoluteEncoder.isConnected
-
-        inputs.absoluteEncoderPosition = Rotations.of(absoluteEncoder.absolutePosition)
 
         inputs.leftPosition = Rotations.of(leftMotor.position.value)
         inputs.leftVelocity = RotationsPerSecond.of(leftMotor.velocity.value)
@@ -81,22 +78,24 @@ class ArmIOReal: ArmIO {
     }
 
     override fun pivotToPosition(position: Measure<Angle>) {
-        Logger.recordOutput("Shooter/Pivot/Position Setpoint", position)
+        val resolvedPosition = position
+        Logger.recordOutput("Shooter/Pivot/Position Setpoint", resolvedPosition)
 
         val control = MotionMagicTorqueCurrentFOC(0.0).apply {
             Slot = 0
-            Position = position.`in`(Rotations)
+            Position = resolvedPosition.`in`(Rotations)
         }
         leftMotor.setControl(control)
-        rightMotor.setControl(control)
+//        rightMotor.setControl(control)
 
     }
 
     override fun setVoltage(volts: Measure<Voltage>) {
         assert(volts in Volts.of(-12.0)..Volts.of(12.0))
+        Logger.recordOutput("/Arm/Voltage", volts)
         val control = VoltageOut(volts.`in`(Volts))
-        leftMotor.setControl(control)
-        rightMotor.setControl(control)
+        leftMotor.setControl(control) // TODO: fix gearbox
+//        rightMotor.setControl(control)
     }
 
     init {
@@ -122,6 +121,10 @@ class ArmIOReal: ArmIO {
                 MotionMagicAcceleration = PROFILE_ACCELERATION
                 MotionMagicJerk = PROFILE_JERK
             }
+
+            ClosedLoopGeneral.apply {
+                ContinuousWrap = true
+            }
         }
 
         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive
@@ -135,13 +138,24 @@ class ArmIOReal: ArmIO {
 
 
     internal companion object Constants {
-        private const val GEAR_RATIO = 0.0
-        val PID_GAINS = PIDGains(120.0, 0.0, 100.0) //placeholders
-        val FF_GAINS = MotorFFGains(7.8, 0.0, 0.0) //placeholders
-        private const val GRAVITY_GAIN = 0.0
-        private const val PROFILE_ACCELERATION = 0.0
-        private const val PROFILE_JERK = 0.0
-        private const val PROFILE_VELOCITY = 0.0
+//        private const val GEAR_RATIO = 125.0
+//        val PID_GAINS = PIDGains(60.88, 0.0, 0.40035) //placeholders
+//        val FF_GAINS = MotorFFGains(0.1448, 0.11929, 0.001579) //placeholders
+//        private const val GRAVITY_GAIN = 0.0095692
+//        private const val PROFILE_ACCELERATION = 1.0
+//        private const val PROFILE_JERK = 1.0
+//        private const val PROFILE_VELOCITY = 1.0
+
+        private const val CHAIN_GEAR_RATIO = 1.0 / 3.0
+        private const val GEAR_RATIO = 125.0 / CHAIN_GEAR_RATIO
+        val PID_GAINS = PIDGains(64.857, 0.0, 20.319) //placeholders
+        val FF_GAINS = MotorFFGains(0.33157, 14.214, 0.15033) //placeholders
+        private const val GRAVITY_GAIN = 0.28233
+        private const val PROFILE_ACCELERATION = 1.0
+        private const val PROFILE_JERK = 1.0
+        private const val PROFILE_VELOCITY = 1.0
+
+        val ZERO_OFFSET = Radians.of(1.01)
     }
 
 }

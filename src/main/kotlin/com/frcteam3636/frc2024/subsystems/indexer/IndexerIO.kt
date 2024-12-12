@@ -49,6 +49,7 @@ class IndexerIOReal : IndexerIO{
             CANSparkLowLevel.MotorType.kBrushless
         )
 
+
     override fun updateInputs(inputs: IndexerInputs) {
         inputs.indexerVelocity = Rotations.per(Minute).of(indexerMotor.encoder.velocity)
         inputs.indexerCurrent = Amps.of(indexerMotor.outputCurrent)

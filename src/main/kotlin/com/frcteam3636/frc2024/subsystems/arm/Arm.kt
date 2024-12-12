@@ -8,6 +8,7 @@ import com.frcteam3636.frc2024.subsystems.intake.Intake.intakeAngleLigament
 import edu.wpi.first.units.Angle
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Units.Degrees
+import edu.wpi.first.units.Units.Radians
 import edu.wpi.first.units.Units.Volts
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d
@@ -15,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d
 import edu.wpi.first.wpilibj.util.Color
 import edu.wpi.first.wpilibj.util.Color8Bit
 import edu.wpi.first.wpilibj2.command.Subsystem
+import edu.wpi.first.wpilibj2.command.button.Trigger
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
@@ -23,7 +25,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-private const val SECONDS_BETWEEN_ARM_UPDATES = 2.0
+private const val SECONDS_BETWEEN_ARM_UPDATES = 1.0
 
 object Arm : Subsystem {
     private var io: ArmIO = when (Robot.model) {
@@ -53,6 +55,13 @@ object Arm : Subsystem {
         Mechanism(io::setVoltage, null, this)
     )
 
+    var inSysIdUpperRange = Trigger {
+        val lowerLimit = Radians.of(3.167)
+        inputs.position < lowerLimit
+                && inputs.leftPosition < lowerLimit
+//                && inputs.rightPosition < lowerLimit
+    }
+
     private var timer = Timer().apply {
         start()
     }
@@ -64,8 +73,9 @@ object Arm : Subsystem {
         armWristAngleLigament.angle = 90.0 - inputs.position.`in`(Degrees)
 
         if (timer.advanceIfElapsed(SECONDS_BETWEEN_ARM_UPDATES) && inputs.absoluteEncoderConnected){
-                io.updatePosition(inputs.absoluteEncoderPosition)
+                io.updatePosition(inputs.position)
         }
+
         Logger.recordOutput("/Arm/Mechanism", mechanism)
 
     }
@@ -84,8 +94,8 @@ object Arm : Subsystem {
         sysID.dynamic(direction)!!
 
     enum class Position(val angle: Measure<Angle>) {
-        Stowed(Degrees.of(135.0)),
-        PickUp(Degrees.of(30.0)),
-        Lower(Degrees.of(-15.0))
+        Stowed(Radians.of(0.0)),
+        PickUp(Radians.of(-0.6)),
+        Lower(Radians.of(0.0))
     }
 }

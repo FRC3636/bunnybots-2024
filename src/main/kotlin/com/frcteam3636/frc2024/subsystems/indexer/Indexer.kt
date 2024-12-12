@@ -4,13 +4,14 @@ import com.frcteam3636.frc2024.Robot
 import com.frcteam3636.frc2024.subsystems.intake.Intake
 import edu.wpi.first.units.Units.Degrees
 import edu.wpi.first.wpilibj.DriverStation
+import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.util.Color
 import edu.wpi.first.wpilibj.util.Color8Bit
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
 
-object Indexer: Subsystem {
+object Indexer : Subsystem {
     private var io: IndexerIO = when (Robot.model) {
         Robot.Model.SIMULATION -> IndexerIOSim()
         Robot.Model.COMPETITION -> IndexerIOReal()
@@ -36,34 +37,48 @@ object Indexer: Subsystem {
      * Does not run if no balloon.
      * Reverses if balloon is wrong alliance.
      */
-    fun autoRun(): Command =
-        runEnd(
+    fun autoRun(): Command {
+        var previousState = BalloonState.None;
+        var timer = Timer()
+        timer.start()
+        return runEnd(
             {
-                DriverStation.getAlliance().map {
-                    if (
-                        (inputs.balloonState == BalloonState.Blue && it == DriverStation.Alliance.Blue)
-                        || (inputs.balloonState == BalloonState.Red && it == DriverStation.Alliance.Red)
-                    ) {
-                        io.setSpinSpeed(0.5)
-                    } else if (inputs.balloonState == BalloonState.None) {
-                        io.setSpinSpeed(0.0)
-                    } else {
-                        io.setSpinSpeed(-0.5)
+                if (previousState != inputs.balloonState) {
+                    timer.reset()
+                }
+
+                if (timer.hasElapsed(0.15)) {
+                    DriverStation.getAlliance().map {
+                        if (
+                            (inputs.balloonState == BalloonState.Blue && it == DriverStation.Alliance.Blue)
+                            || (inputs.balloonState == BalloonState.Red && it == DriverStation.Alliance.Red)
+
+                        ) {
+
+                            io.setSpinSpeed(0.1)
+                        } else if (inputs.balloonState == BalloonState.None) {
+                            io.setSpinSpeed(0.0)
+                        } else {
+                            io.setSpinSpeed(-0.1)
+                        }
                     }
                 }
+
+                previousState = inputs.balloonState;
             },
             {
                 io.setSpinSpeed(0.0)
             }
         )
+    }
 
     fun indexBalloon(): Command = runEnd(
-        {io.setSpinSpeed(0.5)},
-        {io.setSpinSpeed(0.0)}
+        { io.setSpinSpeed(0.05) },
+        { io.setSpinSpeed(0.0) }
     )
 
     fun outtakeBalloon(): Command = runEnd(
-        {io.setSpinSpeed(-0.5)},
-        {io.setSpinSpeed(0.0)}
+        { io.setSpinSpeed(-0.05) },
+        { io.setSpinSpeed(0.0) }
     )
 }

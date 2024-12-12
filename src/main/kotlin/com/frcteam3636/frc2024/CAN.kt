@@ -34,8 +34,8 @@ enum class CTREDeviceId(val num: Int, val bus: String) {
     BackLeftDrivingMotor(2, "*"),
     BackRightDrivingMotor(3, "*"),
     FrontRightDrivingMotor(4, "*"),
-    RightArmMotor(10, "*"),
-    LeftArmMotor(11, "*"),
+    RightArmMotor(11, "*"),
+    LeftArmMotor(10, "*"),
     PigeonGyro(20, "*"),
 }
 

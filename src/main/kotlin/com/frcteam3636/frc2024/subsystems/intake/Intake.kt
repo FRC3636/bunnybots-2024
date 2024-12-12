@@ -43,7 +43,7 @@ object Intake: Subsystem {
     fun outtake(): Command =
         startEnd(
             {
-                io.setSpeed(-0.5)
+                io.setSpeed(-0.1)
             },
             {
                 io.setSpeed(0.0)
@@ -53,7 +53,7 @@ object Intake: Subsystem {
     fun intake(): Command =
         startEnd(
             {
-                io.setSpeed(0.7)
+                io.setSpeed(0.1)
             },
             {
                 io.setSpeed(0.0)

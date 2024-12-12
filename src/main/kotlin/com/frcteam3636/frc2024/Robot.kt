@@ -74,11 +74,6 @@ object Robot : PatchedLoggedRobot() {
         configureAutos()
         configureBindings()
         configureDashboard()
-
-        Intake.register()
-
-        //configure bindings
-        configureBindings()
     }
 
     /** Start logging or pull replay logs from a file */
@@ -155,8 +150,8 @@ object Robot : PatchedLoggedRobot() {
 
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
-        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft, joystickRight)
-        Indexer.defaultCommand = Indexer.autoRun()
+//         Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft, joystickRight)
+//        Indexer.defaultCommand = Indexer.autoRun()
 
         // (The button with the yellow tape on it)
         JoystickButton(joystickLeft, 8).onTrue(Commands.runOnce({
@@ -164,7 +159,7 @@ object Robot : PatchedLoggedRobot() {
             Drivetrain.zeroGyro()
         }).ignoringDisable(true))
 
-//        //Intake
+        //Intake
 //        controller.a()
 //            .debounce(0.150)
 //            .whileTrue(
@@ -175,6 +170,17 @@ object Robot : PatchedLoggedRobot() {
 //            .debounce(0.150)
 //            .whileTrue(
 //                Intake.intake()
+//            )
+//
+//        controller.b()
+//            .debounce(0.15)
+//            .whileTrue(
+//                Indexer.indexBalloon()
+//            )
+//        controller.y()
+//            .debounce(0.15)
+//            .whileTrue(
+//                Indexer.outtakeBalloon()
 //            )
 //
 //        controller.b()
@@ -205,18 +211,26 @@ object Robot : PatchedLoggedRobot() {
             .onTrue(Commands.runOnce(SignalLogger::stop))
 
         controller.y()
-            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward))
+            .whileTrue(
+                Commands.sequence(
+                    Commands.print("Starting quasistatic"),
+                    Arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
+                )
+                    .until(Arm.inSysIdUpperRange.negate())
+            )
+
 
         controller.a()
             .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
 
-        controller.b()
-            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kForward))
-
-        controller.x()
+        controller.rightBumper()
+            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kForward)
+//            .until(Arm.inSysIdUpperRange.negate()))
+            )
+        controller.leftBumper()
             .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kReverse))
 
-        //Arm positions
+        //Arm positions1
 //        controller.a()
 //            .onTrue(
 //                Arm.moveToPosition(Arm.Position.Stowed)
