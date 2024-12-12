@@ -208,7 +208,7 @@ object Drivetrain : Subsystem, Sendable {
             desiredChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
                 translationInput.x * FREE_SPEED.baseUnitMagnitude() * TRANSLATION_SENSITIVITY,
                 translationInput.y * FREE_SPEED.baseUnitMagnitude() * TRANSLATION_SENSITIVITY,
-                -rotationInput.y * TAU * ROTATION_SENSITIVITY,
+                rotationInput.y * TAU * ROTATION_SENSITIVITY,
                 inputs.gyroRotation.toRotation2d()
             )
         }
