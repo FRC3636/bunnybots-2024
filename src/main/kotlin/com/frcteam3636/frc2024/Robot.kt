@@ -153,7 +153,7 @@ object Robot : PatchedLoggedRobot() {
 
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
-         Drivetrain.defaultCommand = Drivetrain.driveWithOneJoystick(joystickLeft)
+         Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft, joystickRight)
         Indexer.defaultCommand = Indexer.autoRun()
 
         // (The button with the yellow tape on it)

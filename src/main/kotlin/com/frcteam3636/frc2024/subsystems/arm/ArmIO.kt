@@ -197,8 +197,8 @@ class ArmIOReal: ArmIO {
         private const val PROFILE_VELOCITY = 1.0
 
 
-        val LEFT_ZERO_OFFSET = Radians.of(1.09)
-        val RIGHT_ZERO_OFFSET = Radians.of(-0.99)
+        val LEFT_ZERO_OFFSET = Radians.of(1.1)
+        val RIGHT_ZERO_OFFSET = Radians.of(-2.06)
     }
 
 }
