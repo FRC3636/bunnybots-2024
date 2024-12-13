@@ -63,8 +63,8 @@ class ArmIOReal: ArmIO {
         inputs.leftPosition = offsetlessLeftPosition + LEFT_ZERO_OFFSET
         Logger.recordOutput("/Arm/Required Left Offset", offsetlessLeftPosition.negate())
 
-        val offsetlessRightPosition = Rotations.of(-rightAbsoluteEncoder.get() * CHAIN_GEAR_RATIO)
-        inputs.rightPosition = offsetlessLeftPosition + RIGHT_ZERO_OFFSET
+        val offsetlessRightPosition = Rotations.of(rightAbsoluteEncoder.get() * CHAIN_GEAR_RATIO)
+        inputs.rightPosition = offsetlessRightPosition + RIGHT_ZERO_OFFSET
         Logger.recordOutput("/Arm/Required Right Offset", offsetlessRightPosition.negate())
 
         inputs.leftRelativePosition = Rotations.of(leftMotor.position.value)
@@ -172,8 +172,8 @@ class ArmIOReal: ArmIO {
         private const val PROFILE_JERK = 1.0
         private const val PROFILE_VELOCITY = 1.0
 
-        val LEFT_ZERO_OFFSET = Radians.of(1.05)
-        val RIGHT_ZERO_OFFSET = Radians.of(1.05)
+        val LEFT_ZERO_OFFSET = Radians.of(1.09)
+        val RIGHT_ZERO_OFFSET = Radians.of(-0.99)
     }
 
 }

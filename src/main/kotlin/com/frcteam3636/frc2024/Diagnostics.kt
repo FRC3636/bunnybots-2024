@@ -17,8 +17,7 @@ import edu.wpi.first.wpilibj.RobotController
  */
 data class Diagnostics(
     val batteryFull: Boolean,
-    val navXConnected: Boolean,
-    val camerasConnected: Boolean,
+    val gyroConnected: Boolean,
     val errorStatusCodes: Map<String, StatusCode>,
     val canStatus: CANStatus,
 ) {
@@ -29,8 +28,7 @@ data class Diagnostics(
         val messages = mutableListOf<ElasticNotification>()
 
         // Add alerts for each suspicious diagnostic condition
-        if (!navXConnected) messages.add(ElasticNotification("NavX disconnected", "The naxX gyro has disconnected!"))
-        if (!camerasConnected) messages.add(ElasticNotification("Camera disconnected", "A camera has disconnected!"))
+        if (!gyroConnected) messages.add(ElasticNotification("IMU disconnected", "The gyro has disconnected!"))
         if (canStatus.transmitErrorCount > 0 || canStatus.receiveErrorCount > 0) {
             messages.add(ElasticNotification("roboRIO CAN Errors", "CAN bus errors detected!"))
         }
@@ -56,8 +54,7 @@ data class Diagnostics(
         /** The most recent diagnostics. */
         var latest = Diagnostics(
             batteryFull = true,
-            navXConnected = true,
-            camerasConnected = true,
+            gyroConnected = true,
             errorStatusCodes = emptyMap(),
             canStatus = CANStatus(),
         )
@@ -73,8 +70,7 @@ data class Diagnostics(
 
             return Diagnostics(
                 batteryFull = RobotController.getBatteryVoltage() >= FULL_BATTERY_VOLTAGE,
-                navXConnected = Drivetrain.inputs.gyroConnected,
-                camerasConnected = Drivetrain.allCamerasConnected,
+                gyroConnected = Drivetrain.inputs.gyroConnected,
                 errorStatusCodes = errorCodes,
                 canStatus = RobotController.getCANStatus(),
             )

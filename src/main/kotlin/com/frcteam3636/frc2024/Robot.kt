@@ -13,6 +13,7 @@ import com.frcteam3636.version.BUILD_DATE
 import com.frcteam3636.version.DIRTY
 import com.frcteam3636.version.GIT_BRANCH
 import com.frcteam3636.version.GIT_SHA
+import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
@@ -74,6 +75,8 @@ object Robot : PatchedLoggedRobot() {
         configureAutos()
         configureBindings()
         configureDashboard()
+
+        CameraServer.startAutomaticCapture();
     }
 
     /** Start logging or pull replay logs from a file */
@@ -195,13 +198,22 @@ object Robot : PatchedLoggedRobot() {
 //                Indexer.indexBalloon()
 //            )
 
-//        //Outtake
-//        controller.leftBumper()
-//            .whileTrue(
-//                Commands.parallel(
-//                    Intake.outtake(),
-//                )
-//            )
+        //Outtake
+        controller.leftBumper()
+            .whileTrue(
+                Commands.parallel(
+                    Intake.outtake(),
+                    Indexer.outtakeBalloon()
+                )
+            )
+
+        controller.rightBumper()
+            .whileTrue(
+                Commands.parallel(
+                    Intake.intake(),
+                    Indexer.indexBalloon()
+                )
+            )
 
         //SysId
 //        controller.leftBumper()
