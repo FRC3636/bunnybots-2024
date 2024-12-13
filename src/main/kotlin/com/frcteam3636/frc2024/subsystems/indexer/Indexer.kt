@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.Subsystem
 import org.littletonrobotics.junction.Logger
 
 object Indexer : Subsystem {
+    private val INDEXER_SPEED = 1.0
+
     private var io: IndexerIO = when (Robot.model) {
         Robot.Model.SIMULATION -> IndexerIOSim()
         Robot.Model.COMPETITION -> IndexerIOReal()
@@ -47,19 +49,16 @@ object Indexer : Subsystem {
                     timer.reset()
                 }
 
-                if (timer.hasElapsed(0.15)) {
+                if (timer.hasElapsed(0.5) || inputs.balloonState != BalloonState.None) {
                     DriverStation.getAlliance().map {
                         if (
                             (inputs.balloonState == BalloonState.Blue && it == DriverStation.Alliance.Blue)
                             || (inputs.balloonState == BalloonState.Red && it == DriverStation.Alliance.Red)
-
+                            || inputs.balloonState == BalloonState.None
                         ) {
-
-                            io.setSpinSpeed(0.1)
-                        } else if (inputs.balloonState == BalloonState.None) {
-                            io.setSpinSpeed(0.0)
+                            io.setVoltage(INDEXER_SPEED)
                         } else {
-                            io.setSpinSpeed(-0.1)
+                            io.setVoltage(-INDEXER_SPEED)
                         }
                     }
                 }
@@ -67,18 +66,18 @@ object Indexer : Subsystem {
                 previousState = inputs.balloonState;
             },
             {
-                io.setSpinSpeed(0.0)
+                io.setVoltage(0.0)
             }
         )
     }
 
     fun indexBalloon(): Command = runEnd(
-        { io.setSpinSpeed(0.05) },
-        { io.setSpinSpeed(0.0) }
+        { io.setVoltage(INDEXER_SPEED) },
+        { io.setVoltage(0.0) }
     )
 
     fun outtakeBalloon(): Command = runEnd(
-        { io.setSpinSpeed(-0.05) },
-        { io.setSpinSpeed(0.0) }
+        { io.setVoltage(-INDEXER_SPEED) },
+        { io.setVoltage(0.0) }
     )
 }

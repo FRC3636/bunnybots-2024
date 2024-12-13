@@ -1,6 +1,5 @@
 package com.frcteam3636.frc2024
 
-import com.ctre.phoenix6.SignalLogger
 import com.ctre.phoenix6.StatusSignal
 import com.frcteam3636.frc2024.subsystems.arm.Arm
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
@@ -14,6 +13,8 @@ import com.frcteam3636.version.DIRTY
 import com.frcteam3636.version.GIT_BRANCH
 import com.frcteam3636.version.GIT_SHA
 import edu.wpi.first.cameraserver.CameraServer
+import edu.wpi.first.cameraserver.CameraServerSharedStore
+import edu.wpi.first.cscore.UsbCamera
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
@@ -25,14 +26,12 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import org.littletonrobotics.junction.LogFileUtil
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.PatchedLoggedRobot
 import org.littletonrobotics.junction.networktables.NT4Publisher
 import org.littletonrobotics.junction.wpilog.WPILOGReader
 import org.littletonrobotics.junction.wpilog.WPILOGWriter
-import java.io.File
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
@@ -76,7 +75,8 @@ object Robot : PatchedLoggedRobot() {
         configureBindings()
         configureDashboard()
 
-        CameraServer.startAutomaticCapture();
+        val camera = CameraServer.startAutomaticCapture()
+        camera.setResolution(240, 240)
     }
 
     /** Start logging or pull replay logs from a file */
@@ -153,8 +153,8 @@ object Robot : PatchedLoggedRobot() {
 
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
-//         Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft, joystickRight)
-//        Indexer.defaultCommand = Indexer.autoRun()
+         Drivetrain.defaultCommand = Drivetrain.driveWithOneJoystick(joystickLeft)
+        Indexer.defaultCommand = Indexer.autoRun()
 
         // (The button with the yellow tape on it)
         JoystickButton(joystickLeft, 8).onTrue(Commands.runOnce({
@@ -162,86 +162,21 @@ object Robot : PatchedLoggedRobot() {
             Drivetrain.zeroGyro()
         }).ignoringDisable(true))
 
-        //Intake
-//        controller.a()
-//            .debounce(0.150)
-//            .whileTrue(
-//                Intake.outtake()
-//            )
-//
-//        controller.x()
-//            .debounce(0.150)
-//            .whileTrue(
-//                Intake.intake()
-//            )
-//
-//        controller.b()
-//            .debounce(0.15)
-//            .whileTrue(
-//                Indexer.indexBalloon()
-//            )
-//        controller.y()
-//            .debounce(0.15)
-//            .whileTrue(
-//                Indexer.outtakeBalloon()
-//            )
-//
-//        controller.b()
-//            .debounce(0.150)
-//            .whileTrue(
-//                Indexer.outtakeBalloon()
-//            )
-//
-//        controller.y()
-//            .debounce(0.150)
-//            .whileTrue(
-//                Indexer.indexBalloon()
-//            )
-
-        //Outtake
+        // Intake
         controller.leftBumper()
-            .whileTrue(
-                Commands.parallel(
-                    Intake.outtake(),
-                    Indexer.outtakeBalloon()
-                )
-            )
+            .whileTrue(Intake.intake())
 
         controller.rightBumper()
-            .whileTrue(
-                Commands.parallel(
-                    Intake.intake(),
-                    Indexer.indexBalloon()
-                )
-            )
+            .whileTrue(Intake.intake())
 
-        //SysId
-//        controller.leftBumper()
-//            .onTrue(Commands.runOnce(SignalLogger::start))
-//
-//        controller.rightBumper()
-//            .onTrue(Commands.runOnce(SignalLogger::stop))
-//
-//        controller.y()
-//            .whileTrue(
-//                Commands.sequence(
-//                    Commands.print("Starting quasistatic"),
-//                    Arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward)
-//                )
-//            )
-//
-//
-//        controller.a()
-//            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
-//
-//        controller.x()
-//            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kReverse))
-//
-//        controller.b()
-//            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kForward))
+        controller.rightTrigger().whileTrue(Indexer.indexBalloon())
+        controller.leftTrigger().whileTrue(Indexer.outtakeBalloon())
+
+
+
 
 //        Arm positions
-        controller.a()
+        controller.y()
             .onTrue(
                 Arm.moveToPosition(Arm.Position.Stowed)
             )
@@ -252,10 +187,14 @@ object Robot : PatchedLoggedRobot() {
             )
 
 
-        controller.y()
+        controller.a()
             .onTrue(
-                Arm.moveToPosition(Arm.Position.Lower)
-            )
+                Arm.moveToPosition(Arm.Position.Lower))
+
+
+        controller.b()
+            .whileTrue(Arm.coastMode().ignoringDisable(true))
+
     }
 
     /** Add data to the driver station dashboard. */

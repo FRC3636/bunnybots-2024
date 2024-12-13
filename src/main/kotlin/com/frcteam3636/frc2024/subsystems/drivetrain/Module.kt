@@ -133,15 +133,18 @@ class DrivingTalon(id: CTREDeviceId) : DrivingMotor {
 
     }
 
+    private val positionSignal = inner.position
+    private val velocitySignal = inner.velocity
+
     init {
         Robot.statusSignals[id.name] = inner.version
     }
 
     override val position: Measure<Distance>
-        get() = Meters.of(inner.position.value * DRIVING_GEAR_RATIO_TALON * WHEEL_CIRCUMFERENCE.`in`(Meters))
+        get() = Meters.of(positionSignal.value * DRIVING_GEAR_RATIO_TALON * WHEEL_CIRCUMFERENCE.`in`(Meters))
 
     override var velocity: Measure<Velocity<Distance>>
-        get() = MetersPerSecond.of(inner.velocity.value * DRIVING_GEAR_RATIO_TALON * WHEEL_CIRCUMFERENCE.`in`(Meters))
+        get() = MetersPerSecond.of(velocitySignal.value * DRIVING_GEAR_RATIO_TALON * WHEEL_CIRCUMFERENCE.`in`(Meters))
         set(value) {
             inner.setControl(VelocityTorqueCurrentFOC(value.`in`(MetersPerSecond) / DRIVING_GEAR_RATIO_TALON / WHEEL_CIRCUMFERENCE.`in`(Meters)))
         }

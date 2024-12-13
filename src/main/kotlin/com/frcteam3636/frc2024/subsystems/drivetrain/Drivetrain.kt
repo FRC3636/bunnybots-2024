@@ -220,6 +220,11 @@ object Drivetrain : Subsystem, Sendable {
             drive(translationJoystick.translation2d, rotationJoystick.translation2d)
         }
 
+    fun driveWithOneJoystick(joystick: Joystick): Command =
+        run {
+            drive(joystick.translation2d, Translation2d(0.0, -joystick.z))
+        }
+
     @Suppress("unused")
     fun driveWithController(controller: CommandXboxController): Command =
         run {

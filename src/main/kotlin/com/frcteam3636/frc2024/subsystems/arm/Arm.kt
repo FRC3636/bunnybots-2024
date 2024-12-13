@@ -12,11 +12,14 @@ import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d
 import edu.wpi.first.wpilibj.util.Color
 import edu.wpi.first.wpilibj.util.Color8Bit
+import edu.wpi.first.wpilibj2.command.Command
+import edu.wpi.first.wpilibj2.command.StartEndCommand
 import edu.wpi.first.wpilibj2.command.Subsystem
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
 import org.littletonrobotics.junction.Logger
+import kotlin.math.sin
 
 
 private const val SECONDS_BETWEEN_ARM_UPDATES = 1.0
@@ -83,6 +86,25 @@ object Arm : Subsystem {
             io.pivotToPosition(inputs.leftPosition)
         })!!
 
+    fun coastMode() =
+        startEnd({
+            io.setCoastMode(true)
+        }, {
+            io.setCoastMode(false)
+        })
+
+    fun followWave(center: Measure<Angle>, magnitude: Measure<Angle>): Command {
+        val timer = Timer().apply {
+            start()
+        }
+        return runEnd({
+            val setpoint = magnitude * sin(timer.get() / 2.0) + center
+            io.pivotToPosition(setpoint)
+        }, {
+            io.pivotToPosition(inputs.leftPosition)
+        })!!
+    }
+
     fun sysIdQuasistatic(direction: Direction) =
         sysID.quasistatic(direction)!!
 
@@ -90,8 +112,12 @@ object Arm : Subsystem {
         sysID.dynamic(direction)!!
 
     enum class Position(val angle: Measure<Angle>) {
-        Stowed(Radians.of(0.0)),
-        PickUp(Radians.of(-0.6)),
-        Lower(Radians.of(-0.4))
+        /** All the way up */
+        Stowed(Degrees.of(-127.0)),
+//        Stowed(Degrees.of(-80.0)),
+        /** Slightly picked up */
+        PickUp(Degrees.of(0.0)),
+        /** Ready to pick up */
+        Lower(Degrees.of(15.0))
     }
 }

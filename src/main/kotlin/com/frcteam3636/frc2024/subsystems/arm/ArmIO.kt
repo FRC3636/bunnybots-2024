@@ -1,4 +1,5 @@
 package com.frcteam3636.frc2024.subsystems.arm
+import com.ctre.phoenix6.configs.MotorOutputConfigs
 import com.ctre.phoenix6.configs.TalonFXConfiguration
 import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC
 import com.ctre.phoenix6.controls.VoltageOut
@@ -22,6 +23,8 @@ import org.team9432.annotation.Logged
 
 @Logged
 open class ArmInputs {
+    var reference = Radians.zero()!!
+
     var rightRelativePosition = Radians.zero()!!
     var leftRelativePosition = Radians.zero()!!
     var leftPosition = Radians.zero()!!
@@ -46,6 +49,8 @@ interface ArmIO {
         fun setVoltage(volts: Measure<Voltage>)
 
         fun updatePosition(left: Measure<Angle>, right: Measure<Angle>)
+
+        fun setCoastMode(enabled: Boolean)
 }
 
 
@@ -57,6 +62,10 @@ class ArmIOReal: ArmIO {
 
     private val leftAbsoluteEncoder = DutyCycleEncoder(DigitalInput(0))
     private val rightAbsoluteEncoder = DutyCycleEncoder(DigitalInput(1))
+
+    init {
+        Logger.recordOutput("/Arm/CoastMode", false)
+    }
 
     override fun updateInputs(inputs: ArmInputs) {
         val offsetlessLeftPosition = Rotations.of(-leftAbsoluteEncoder.get() * CHAIN_GEAR_RATIO)
@@ -74,10 +83,12 @@ class ArmIOReal: ArmIO {
         inputs.rightAbsoluteEncoderConnected = rightAbsoluteEncoder.isConnected
 
         inputs.leftVelocity = RotationsPerSecond.of(leftMotor.velocity.value)
-        inputs.rightVelocity = RotationsPerSecond.of(rightMotor.position.value)
+        inputs.rightVelocity = RotationsPerSecond.of(rightMotor.velocity.value)
 
         inputs.leftCurrent = Volts.of(leftMotor.motorVoltage.value)
         inputs.rightCurrent = Volts.of(rightMotor.motorVoltage.value)
+
+        inputs.reference = Rotations.of(leftMotor.closedLoopReference.value)
     }
 
     override fun updatePosition(left: Measure<Angle>, right: Measure<Angle>) {
@@ -87,7 +98,7 @@ class ArmIOReal: ArmIO {
 
     private val pivotControl = MotionMagicTorqueCurrentFOC(0.0)
     override fun pivotToPosition(position: Measure<Angle>) {
-        Logger.recordOutput("Shooter/Pivot/Position Setpoint", position)
+        Logger.recordOutput("Arm/Position Setpoint", position)
 
         val control = pivotControl.apply {
             Slot = 0
@@ -95,6 +106,19 @@ class ArmIOReal: ArmIO {
         }
         leftMotor.setControl(control)
         rightMotor.setControl(control)
+    }
+
+    override fun setCoastMode(enabled: Boolean) {
+        Logger.recordOutput("/Arm/CoastMode", enabled)
+        val config = MotorOutputConfigs().apply {
+            NeutralMode = if (enabled) {
+                NeutralModeValue.Coast
+            } else {
+                NeutralModeValue.Brake
+            }
+        }
+        leftMotor.configurator.apply(config)
+        rightMotor.configurator.apply(config)
     }
 
     override fun setVoltage(volts: Measure<Voltage>) {
@@ -162,15 +186,16 @@ class ArmIOReal: ArmIO {
 
         private const val CHAIN_GEAR_RATIO = 1.0 / 3.0
         private const val GEAR_RATIO = 125.0 / CHAIN_GEAR_RATIO
-        val LEFT_PID_GAINS = PIDGains(64.138, 0.0, 59.411)
+        val LEFT_PID_GAINS = PIDGains(54.138, 0.0, 169.411)
         val LEFT_FF_GAINS = MotorFFGains(0.3289, 42.817, 0.39107)
         private const val LEFT_GRAVITY_GAIN = 0.17119
-        val RIGHT_PID_GAINS = PIDGains(63.339, 0.0, 59.134)
+        val RIGHT_PID_GAINS = PIDGains(53.339, 0.0, 169.134)
         val RIGHT_FF_GAINS = MotorFFGains(0.29364, 43.77, 0.34751)
         private const val RIGHT_GRAVITY_GAIN = 0.12181
         private const val PROFILE_ACCELERATION = 1.0
         private const val PROFILE_JERK = 1.0
         private const val PROFILE_VELOCITY = 1.0
+
 
         val LEFT_ZERO_OFFSET = Radians.of(1.09)
         val RIGHT_ZERO_OFFSET = Radians.of(-0.99)
@@ -216,6 +241,10 @@ class ArmIOSim : ArmIO {
     override fun updatePosition(left: Measure<Angle>, right: Measure<Angle>) {
         // no drifting in sim so no need to update
     }
+
+    override fun setCoastMode(enabled: Boolean) {
+
+    }
 }
 
 class ArmIOPrototype: ArmIO {
@@ -230,5 +259,9 @@ class ArmIOPrototype: ArmIO {
     }
 
     override fun updatePosition(left: Measure<Angle>, right: Measure<Angle>) {
+    }
+
+    override fun setCoastMode(enabled: Boolean) {
+
     }
 }
