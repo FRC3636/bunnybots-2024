@@ -7,6 +7,7 @@ import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain.Constants.BRAKE_
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain.Constants.DEFAULT_PATHING_CONSTRAINTS
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain.Constants.FREE_SPEED
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain.Constants.JOYSTICK_DEADBAND
+import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain.Constants.JOYSTICK_EXPONENT
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain.Constants.ROTATION_SENSITIVITY
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain.Constants.TRANSLATION_SENSITIVITY
 import com.frcteam3636.frc2024.utils.ElasticWidgets
@@ -43,6 +44,7 @@ import java.util.*
 import kotlin.jvm.optionals.getOrNull
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.pow
 
 /** A singleton object representing the drivetrain. */
 object Drivetrain : Subsystem, Sendable {
@@ -205,10 +207,16 @@ object Drivetrain : Subsystem, Sendable {
             // No joystick input - stop moving!
             desiredModuleStates = BRAKE_POSITION
         } else {
+            // Prevent even powers from removing negatives by multiplying outside of abs
+            val exponentialTranslation = Translation2d(
+                translationInput.x * abs(translationInput.x.pow(JOYSTICK_EXPONENT - 1)),
+                translationInput.y * abs(translationInput.y.pow(JOYSTICK_EXPONENT - 1)),
+            )
+
             desiredChassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-                translationInput.x * FREE_SPEED.baseUnitMagnitude() * TRANSLATION_SENSITIVITY,
-                translationInput.y * FREE_SPEED.baseUnitMagnitude() * TRANSLATION_SENSITIVITY,
-                -rotationInput.y * TAU * ROTATION_SENSITIVITY,
+                exponentialTranslation.x * FREE_SPEED.baseUnitMagnitude() * TRANSLATION_SENSITIVITY,
+                exponentialTranslation.y * FREE_SPEED.baseUnitMagnitude() * TRANSLATION_SENSITIVITY,
+                rotationInput.y * TAU * ROTATION_SENSITIVITY,
                 inputs.gyroRotation.toRotation2d()
             )
         }
@@ -218,6 +226,11 @@ object Drivetrain : Subsystem, Sendable {
         run {
             // Directly accessing Joystick.x/y gives inverted values - use a `Translation2d` instead.
             drive(translationJoystick.translation2d, rotationJoystick.translation2d)
+        }
+
+    fun driveWithOneJoystick(joystick: Joystick): Command =
+        run {
+            drive(joystick.translation2d, Translation2d(0.0, -joystick.z))
         }
 
     @Suppress("unused")
@@ -279,15 +292,16 @@ object Drivetrain : Subsystem, Sendable {
     internal object Constants {
         // Translation/rotation coefficient for teleoperated driver controls
         /** Unit: Percent of max robot speed */
-        const val TRANSLATION_SENSITIVITY = 0.1
+        const val TRANSLATION_SENSITIVITY = 1.0
 
         /** Unit: Rotations per second */
-        const val ROTATION_SENSITIVITY = 0.4
+        const val ROTATION_SENSITIVITY = 0.6
 
         private val WHEEL_BASE: Double = Units.inchesToMeters(30.0)
         private val TRACK_WIDTH: Double = Units.inchesToMeters(28.0)
 
-        const val JOYSTICK_DEADBAND = 0.15
+        const val JOYSTICK_DEADBAND = 0.075
+        const val JOYSTICK_EXPONENT = 2
 
         val MODULE_POSITIONS =
             PerCorner(

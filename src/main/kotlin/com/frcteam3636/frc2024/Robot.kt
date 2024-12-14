@@ -1,6 +1,5 @@
 package com.frcteam3636.frc2024
 
-import com.ctre.phoenix6.SignalLogger
 import com.ctre.phoenix6.StatusSignal
 import com.frcteam3636.frc2024.subsystems.arm.Arm
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
@@ -13,6 +12,9 @@ import com.frcteam3636.version.BUILD_DATE
 import com.frcteam3636.version.DIRTY
 import com.frcteam3636.version.GIT_BRANCH
 import com.frcteam3636.version.GIT_SHA
+import edu.wpi.first.cameraserver.CameraServer
+import edu.wpi.first.cameraserver.CameraServerSharedStore
+import edu.wpi.first.cscore.UsbCamera
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
@@ -24,14 +26,12 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler
 import edu.wpi.first.wpilibj2.command.Commands
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController
 import edu.wpi.first.wpilibj2.command.button.JoystickButton
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine
 import org.littletonrobotics.junction.LogFileUtil
 import org.littletonrobotics.junction.Logger
 import org.littletonrobotics.junction.PatchedLoggedRobot
 import org.littletonrobotics.junction.networktables.NT4Publisher
 import org.littletonrobotics.junction.wpilog.WPILOGReader
 import org.littletonrobotics.junction.wpilog.WPILOGWriter
-import java.io.File
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 
@@ -67,7 +67,7 @@ object Robot : PatchedLoggedRobot() {
         )
 
         // Joysticks are likely to be missing in simulation, which usually isn't a problem.
-        DriverStation.silenceJoystickConnectionWarning(!isReal())
+        DriverStation.silenceJoystickConnectionWarning(RobotBase.isSimulation())
 
         configureAdvantageKit()
         configureSubsystems()
@@ -75,10 +75,8 @@ object Robot : PatchedLoggedRobot() {
         configureBindings()
         configureDashboard()
 
-        Intake.register()
-
-        //configure bindings
-        configureBindings()
+        val camera = CameraServer.startAutomaticCapture()
+        camera.setResolution(160, 160)
     }
 
     /** Start logging or pull replay logs from a file */
@@ -90,21 +88,24 @@ object Robot : PatchedLoggedRobot() {
         Logger.recordMetadata("Model", model.name)
 
         if (isReal()) {
-            Logger.addDataReceiver(WPILOGWriter()) // Log to a USB stick
-            if (!Path("/U").exists()) {
-                Elastic.sendAlert(
-                    ElasticNotification(
-                        "logging USB stick not plugged into radio",
-                        "You gotta plug in a usb stick yo",
-                        NotificationLevel.WARNING
-                    )
-                )
-            }
+            // This competition we aren't using a USB log stick because there's no extra USB port on the RoboRIO.
+//            Logger.addDataReceiver(WPILOGWriter()) // Log to a USB stick
+//            if (!Path("/U").exists()) {
+//                Elastic.sendAlert(
+//                    ElasticNotification(
+//                        "Insert Log USB drive into RoboRIO",
+//                        "This match will not have debug logs.",
+//                        NotificationLevel.WARNING
+//                    )
+//                )
+//            }
+            Logger.addDataReceiver(WPILOGWriter("/home/lvuser/logs")) // Log on-device instead
+
             Logger.addDataReceiver(NT4Publisher()) // Publish data to NetworkTables
             // Enables power distribution logging
             if (model == Model.COMPETITION) {
                 PowerDistribution(
-                    1, PowerDistribution.ModuleType.kRev
+                    62, PowerDistribution.ModuleType.kRev
                 )
             } else {
                 PowerDistribution(
@@ -155,7 +156,7 @@ object Robot : PatchedLoggedRobot() {
 
     /** Configure which commands each joystick button triggers. */
     private fun configureBindings() {
-        Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft, joystickRight)
+         Drivetrain.defaultCommand = Drivetrain.driveWithJoysticks(joystickLeft, joystickRight)
         Indexer.defaultCommand = Indexer.autoRun()
 
         // (The button with the yellow tape on it)
@@ -164,73 +165,44 @@ object Robot : PatchedLoggedRobot() {
             Drivetrain.zeroGyro()
         }).ignoringDisable(true))
 
-//        //Intake
-//        controller.a()
-//            .debounce(0.150)
-//            .whileTrue(
-//                Intake.outtake()
-//            )
-//
-//        controller.x()
-//            .debounce(0.150)
-//            .whileTrue(
-//                Intake.intake()
-//            )
-//
-//        controller.b()
-//            .debounce(0.150)
-//            .whileTrue(
-//                Indexer.outtakeBalloon()
-//            )
-//
-//        controller.y()
-//            .debounce(0.150)
-//            .whileTrue(
-//                Indexer.indexBalloon()
-//            )
-
-//        //Outtake
-//        controller.leftBumper()
-//            .whileTrue(
-//                Commands.parallel(
-//                    Intake.outtake(),
-//                )
-//            )
-
-        //SysId
+        // Intake
         controller.leftBumper()
-            .onTrue(Commands.runOnce(SignalLogger::start))
+            .whileTrue(Intake.intake())
 
         controller.rightBumper()
-            .onTrue(Commands.runOnce(SignalLogger::stop))
+            .whileTrue(Intake.intake())
 
+        controller.rightTrigger().whileTrue(Indexer.indexBalloon())
+        controller.leftTrigger().whileTrue(Indexer.outtakeBalloon())
+
+
+
+
+//        Arm positions
         controller.y()
-            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kForward))
-
-        controller.a()
-            .whileTrue(Arm.sysIdQuasistatic(SysIdRoutine.Direction.kReverse))
-
-        controller.b()
-            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kForward))
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.Stowed)
+            )
 
         controller.x()
-            .whileTrue(Arm.sysIdDynamic(SysIdRoutine.Direction.kReverse))
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.PickUp)
+            )
 
-        //Arm positions
-//        controller.a()
-//            .onTrue(
-//                Arm.moveToPosition(Arm.Position.Stowed)
-//            )
-//
-//        controller.x()
-//            .onTrue(
-//                Arm.moveToPosition(Arm.Position.PickUp)
-//            )
-//
-//        controller.y()
-//            .onTrue(
-//                Arm.moveToPosition(Arm.Position.Lower)
-//            )
+
+        controller.a()
+            .onTrue(
+                Arm.moveToPosition(Arm.Position.Lower))
+
+
+        controller.b()
+            .whileTrue(Arm.coastMode().ignoringDisable(true))
+
+        controller.button(7)
+            .and(controller.button(8))
+            .and(controller.y())
+            .onTrue(Arm.zeroIt().ignoringDisable(true))
+
     }
 
     /** Add data to the driver station dashboard. */

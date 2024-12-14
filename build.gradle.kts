@@ -75,6 +75,12 @@ deploy {
         roborio.artifacts {
             register<FRCJavaArtifact>("frcJava") {
                 jvmArgs.add("-ea") // Remove this flag during comp to disable asserts
+//                jvmArgs.add("-Dcom.sun.management.jmxremote=true")
+//                jvmArgs.add("-Dcom.sun.management.jmxremote.port=1198")
+//                jvmArgs.add("-Dcom.sun.management.jmxremote.local.only=false")
+//                jvmArgs.add("-Dcom.sun.management.jmxremote.ssl=false")
+//                jvmArgs.add("-Dcom.sun.management.jmxremote.authenticate=false")
+//                jvmArgs.add("-Djava.rmi.server.hostname=10.36.36.2") // Replace TE.AM with team number
                 setJarTask(tasks.jar)
                 dependsOn(tasks.assemble)
             }

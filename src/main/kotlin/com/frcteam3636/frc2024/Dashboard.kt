@@ -71,11 +71,8 @@ object Dashboard {
             .withSize(6, 2)
             .withPosition(0, 2)
 
-        tab.addBoolean("NavX OK") { Diagnostics.latest.navXConnected }
+        tab.addBoolean("Gyro OK") { Diagnostics.latest.gyroConnected }
             .withPosition(10, 0)
-            .withSize(2, 1)
-        tab.addBoolean("Cameras OK") { Diagnostics.latest.navXConnected }
-            .withPosition(10, 1)
             .withSize(2, 1)
         tab.addBoolean("CAN Bus OK") { Diagnostics.latest.canStatus.transmitErrorCount == 0 && Diagnostics.latest.canStatus.receiveErrorCount == 0 }
             .withPosition(10, 2)

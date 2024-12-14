@@ -40,20 +40,10 @@ object Intake: Subsystem {
         Logger.recordOutput("Intake Angle", mechanism)
     }
 
-    fun outtake(): Command =
-        startEnd(
-            {
-                io.setSpeed(-0.5)
-            },
-            {
-                io.setSpeed(0.0)
-            }
-        )
-
     fun intake(): Command =
         startEnd(
             {
-                io.setSpeed(0.7)
+                io.setSpeed(0.1)
             },
             {
                 io.setSpeed(0.0)

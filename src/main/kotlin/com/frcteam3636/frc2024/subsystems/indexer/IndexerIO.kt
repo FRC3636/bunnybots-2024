@@ -32,8 +32,8 @@ open class IndexerInputs {
 interface IndexerIO {
     fun updateInputs(inputs: IndexerInputs)
 
-    fun setSpinSpeed(speed: Double)
-    // percent of full speed
+    fun setVoltage(voltage: Double)
+    // percent of full voltage
 }
 
 class IndexerIOReal : IndexerIO{
@@ -49,6 +49,7 @@ class IndexerIOReal : IndexerIO{
             CANSparkLowLevel.MotorType.kBrushless
         )
 
+
     override fun updateInputs(inputs: IndexerInputs) {
         inputs.indexerVelocity = Rotations.per(Minute).of(indexerMotor.encoder.velocity)
         inputs.indexerCurrent = Amps.of(indexerMotor.outputCurrent)
@@ -63,10 +64,10 @@ class IndexerIOReal : IndexerIO{
         }
     }
 
-    override fun setSpinSpeed(speed: Double) {
-        assert(speed in -1.0..1.0)
-        println("Speed: $speed")
-        indexerMotor.set(speed)
+    override fun setVoltage(voltage: Double) {
+        assert(voltage in -12.0..12.0)
+        Logger.recordOutput("/Indexer/OutputVoltage", voltage)
+        indexerMotor.setVoltage(voltage)
     }
 }
 
@@ -84,9 +85,9 @@ class IndexerIOSim: IndexerIO {
         inputs.position = Radians.of(inputs.position.`in`(Radians).mod(TAU))
     }
 
-    override fun setSpinSpeed(speed: Double) {
-        assert(speed in -1.0..1.0)
-        flywheelSim.setInputVoltage(speed*12.0)
+    override fun setVoltage(voltage: Double) {
+        assert(voltage in -1.0..1.0)
+        flywheelSim.setInputVoltage(voltage*12.0)
     }
 }
 
@@ -94,6 +95,6 @@ class IndexerIOPrototype: IndexerIO {
     override fun updateInputs(inputs: IndexerInputs) {
     }
 
-    override fun setSpinSpeed(speed: Double) {
+    override fun setVoltage(voltage: Double) {
     }
 }
