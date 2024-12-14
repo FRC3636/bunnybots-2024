@@ -7,6 +7,7 @@ import edu.wpi.first.units.Angle
 import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Time
 import edu.wpi.first.units.Units.*
+import edu.wpi.first.wpilibj.DriverStation
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d
@@ -53,13 +54,6 @@ object Arm : Subsystem {
         Mechanism(io::setVoltage, null, this)
     )
 
-//    var inSysIdUpperRange = Trigger {
-//        val lowerLimit = Radians.of(3.167)
-//        inputs.position < lowerLimit
-//                && inputs.leftPosition < lowerLimit
-////                && inputs.rightPosition < lowerLimit
-//    }
-
     private var timer = Timer().apply {
         start()
     }
@@ -77,7 +71,7 @@ object Arm : Subsystem {
         }
 
         Logger.recordOutput("/Arm/Mechanism", mechanism)
-
+        Logger.recordOutput("/Arm/IsZeroed", io.armZeroed)
     }
 
     fun moveToPosition(position: Position) =
@@ -116,6 +110,15 @@ object Arm : Subsystem {
         })!!
     }
 
+    fun zeroIt() = runOnce {
+        if (DriverStation.isDisabled()) {
+            io.zeroHere(inputs)
+            print("*************** Arm Zeroed !! ***************")
+        } else {
+            print("Disable the robot to zero the arm!")
+        }
+    }
+
     fun sysIdQuasistatic(direction: Direction) =
         sysID.quasistatic(direction)!!
 
@@ -129,6 +132,6 @@ object Arm : Subsystem {
         /** Slightly picked up */
         PickUp(Degrees.of(0.0)),
         /** Ready to pick up */
-        Lower(Degrees.of(15.0))
+        Lower(Degrees.of(6.0))
     }
 }

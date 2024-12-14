@@ -9,6 +9,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue
 import com.frcteam3636.frc2024.CTREDeviceId
 import com.frcteam3636.frc2024.Robot
 import com.frcteam3636.frc2024.TalonFX
+import com.frcteam3636.frc2024.utils.Elastic
+import com.frcteam3636.frc2024.utils.ElasticNotification
 import com.frcteam3636.frc2024.utils.math.*
 import edu.wpi.first.math.system.plant.DCMotor
 import edu.wpi.first.units.Angle
@@ -17,6 +19,7 @@ import edu.wpi.first.units.Units.*
 import edu.wpi.first.units.Voltage
 import edu.wpi.first.wpilibj.DigitalInput
 import edu.wpi.first.wpilibj.DutyCycleEncoder
+import edu.wpi.first.wpilibj.Preferences
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim
 import org.littletonrobotics.junction.Logger
 import org.team9432.annotation.Logged
@@ -51,6 +54,11 @@ interface ArmIO {
         fun updatePosition(left: Measure<Angle>, right: Measure<Angle>)
 
         fun setCoastMode(enabled: Boolean)
+
+        fun zeroHere(inputs: ArmInputs)
+
+        val armZeroed: Boolean
+            get() = true
 }
 
 
@@ -60,6 +68,12 @@ class ArmIOReal: ArmIO {
 
     private val leftAbsoluteEncoder = DutyCycleEncoder(DigitalInput(0))
     private val rightAbsoluteEncoder = DutyCycleEncoder(DigitalInput(1))
+
+    private var leftZero: Measure<Angle>
+    private var rightZero: Measure<Angle>
+
+    override var armZeroed = true
+        private set
 
     private val leftConfig = TalonFXConfiguration().apply {
         Slot0.apply {
@@ -105,20 +119,32 @@ class ArmIOReal: ArmIO {
         }
     }
 
+    private fun warnArmNotZeroed() {
+        Elastic.sendAlert(ElasticNotification("ARM MUST BE ZEROED!!!",
+            "The arm will not work unless it is zeroed before the current match."))
+    }
+
     init {
         Logger.recordOutput("/Arm/CoastMode", false)
 
         leftMotor.configurator.apply(leftConfig)
         rightMotor.configurator.apply(rightConfig)
+
+        if (!Preferences.containsKey("LeftArmZero") || !Preferences.containsKey("RightArmZero")) {
+            warnArmNotZeroed()
+            armZeroed = false
+        }
+        leftZero = Radians.of(Preferences.getDouble("LeftArmZero", 0.0))
+        rightZero = Radians.of(Preferences.getDouble("RightArmZero", 0.0))
     }
 
     override fun updateInputs(inputs: ArmInputs) {
         val offsetlessLeftPosition = Rotations.of(-leftAbsoluteEncoder.get() * CHAIN_GEAR_RATIO)
-        inputs.leftPosition = offsetlessLeftPosition + LEFT_ZERO_OFFSET
+        inputs.leftPosition = offsetlessLeftPosition + leftZero
         Logger.recordOutput("/Arm/Required Left Offset", offsetlessLeftPosition.negate())
 
         val offsetlessRightPosition = Rotations.of(rightAbsoluteEncoder.get() * CHAIN_GEAR_RATIO)
-        inputs.rightPosition = offsetlessRightPosition + RIGHT_ZERO_OFFSET
+        inputs.rightPosition = offsetlessRightPosition + rightZero
         Logger.recordOutput("/Arm/Required Right Offset", offsetlessRightPosition.negate())
 
         inputs.leftRelativePosition = Rotations.of(leftMotor.position.value)
@@ -143,6 +169,7 @@ class ArmIOReal: ArmIO {
 
     private val pivotControl = MotionMagicTorqueCurrentFOC(0.0)
     override fun pivotToPosition(position: Measure<Angle>) {
+        if (!armZeroed) return warnArmNotZeroed()
         Logger.recordOutput("Arm/Position Setpoint", position)
 
         val control = pivotControl.apply {
@@ -173,8 +200,17 @@ class ArmIOReal: ArmIO {
         })
     }
 
+    override fun zeroHere(inputs: ArmInputs) {
+        armZeroed = true
+        leftZero = (inputs.leftPosition - leftZero).negate()
+        rightZero = (inputs.rightPosition - rightZero).negate()
+        Preferences.setDouble("LeftArmZero", leftZero.`in`(Radians))
+        Preferences.setDouble("RightArmZero", rightZero.`in`(Radians))
+    }
+
     override fun setVoltage(volts: Measure<Voltage>) {
         assert(volts in Volts.of(-12.0)..Volts.of(12.0))
+        if (!armZeroed) return warnArmNotZeroed()
         Logger.recordOutput("/Arm/Voltage", volts)
         val control = VoltageOut(volts.`in`(Volts))
 //        leftMotor.setControl(control)
@@ -201,10 +237,6 @@ class ArmIOReal: ArmIO {
         private const val PROFILE_ACCELERATION = 1.0
         private const val PROFILE_JERK = 1.0
         private const val PROFILE_VELOCITY = 1.0
-
-
-        val LEFT_ZERO_OFFSET = Radians.of(1.08)
-        val RIGHT_ZERO_OFFSET = Radians.of(-2.05)
     }
 
 }
@@ -251,6 +283,9 @@ class ArmIOSim : ArmIO {
     override fun setCoastMode(enabled: Boolean) {
 
     }
+
+    override fun zeroHere(inputs: ArmInputs) {
+    }
 }
 
 class ArmIOPrototype: ArmIO {
@@ -269,5 +304,8 @@ class ArmIOPrototype: ArmIO {
 
     override fun setCoastMode(enabled: Boolean) {
 
+    }
+
+    override fun zeroHere(inputs: ArmInputs) {
     }
 }

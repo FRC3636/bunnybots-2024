@@ -198,6 +198,11 @@ object Robot : PatchedLoggedRobot() {
         controller.b()
             .whileTrue(Arm.coastMode().ignoringDisable(true))
 
+        controller.button(7)
+            .and(controller.button(8))
+            .and(controller.y())
+            .onTrue(Arm.zeroIt().ignoringDisable(true))
+
     }
 
     /** Add data to the driver station dashboard. */
