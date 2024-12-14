@@ -67,7 +67,7 @@ object Robot : PatchedLoggedRobot() {
         )
 
         // Joysticks are likely to be missing in simulation, which usually isn't a problem.
-        DriverStation.silenceJoystickConnectionWarning(true) // FIXME: re-add before comp
+        DriverStation.silenceJoystickConnectionWarning(RobotBase.isSimulation())
 
         configureAdvantageKit()
         configureSubsystems()
@@ -88,16 +88,19 @@ object Robot : PatchedLoggedRobot() {
         Logger.recordMetadata("Model", model.name)
 
         if (isReal()) {
-            Logger.addDataReceiver(WPILOGWriter()) // Log to a USB stick
-            if (!Path("/U").exists()) {
-                Elastic.sendAlert(
-                    ElasticNotification(
-                        "logging USB stick not plugged into radio",
-                        "You gotta plug in a usb stick yo",
-                        NotificationLevel.WARNING
-                    )
-                )
-            }
+            // This competition we aren't using a USB log stick because there's no extra USB port on the RoboRIO.
+//            Logger.addDataReceiver(WPILOGWriter()) // Log to a USB stick
+//            if (!Path("/U").exists()) {
+//                Elastic.sendAlert(
+//                    ElasticNotification(
+//                        "Insert Log USB drive into RoboRIO",
+//                        "This match will not have debug logs.",
+//                        NotificationLevel.WARNING
+//                    )
+//                )
+//            }
+            Logger.addDataReceiver(WPILOGWriter("/home/lvuser/logs")) // Log on-device instead
+
             Logger.addDataReceiver(NT4Publisher()) // Publish data to NetworkTables
             // Enables power distribution logging
             if (model == Model.COMPETITION) {
