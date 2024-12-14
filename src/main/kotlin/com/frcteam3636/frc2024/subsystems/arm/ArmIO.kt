@@ -55,16 +55,61 @@ interface ArmIO {
 
 
 class ArmIOReal: ArmIO {
-
     private val leftMotor = TalonFX(CTREDeviceId.LeftArmMotor)
-
     private val rightMotor = TalonFX(CTREDeviceId.RightArmMotor)
 
     private val leftAbsoluteEncoder = DutyCycleEncoder(DigitalInput(0))
     private val rightAbsoluteEncoder = DutyCycleEncoder(DigitalInput(1))
 
+    private val leftConfig = TalonFXConfiguration().apply {
+        Slot0.apply {
+            pidGains = LEFT_PID_GAINS
+            motorFFGains = LEFT_FF_GAINS
+            GravityType = GravityTypeValue.Arm_Cosine
+            kG = LEFT_GRAVITY_GAIN
+        }
+
+        MotorOutput.apply {
+            NeutralMode = NeutralModeValue.Brake
+            Inverted = InvertedValue.CounterClockwise_Positive
+        }
+
+        Feedback.apply {
+            SensorToMechanismRatio = GEAR_RATIO
+            FeedbackRotorOffset = 0.0
+        }
+
+        MotionMagic.apply {
+            MotionMagicCruiseVelocity = PROFILE_VELOCITY
+            MotionMagicAcceleration = PROFILE_ACCELERATION
+            MotionMagicJerk = PROFILE_JERK
+        }
+
+        ClosedLoopGeneral.apply {
+            ContinuousWrap = true
+        }
+    }
+
+    private val rightConfig = TalonFXConfiguration().apply {
+        deserialize(leftConfig.serialize()) // TalonFXConfiguration doesn't implement Cloneable, so we do this instead
+
+        MotorOutput.apply {
+            Inverted = InvertedValue.Clockwise_Positive
+        }
+
+        Slot0.apply {
+            pidGains = RIGHT_PID_GAINS
+            motorFFGains = RIGHT_FF_GAINS
+            GravityType = GravityTypeValue.Arm_Cosine
+            kG = RIGHT_GRAVITY_GAIN
+        }
+    }
+
     init {
         Logger.recordOutput("/Arm/CoastMode", false)
+
+        leftMotor.configurator.apply(leftConfig)
+        rightMotor.configurator.apply(rightConfig)
     }
 
     override fun updateInputs(inputs: ArmInputs) {
@@ -110,15 +155,22 @@ class ArmIOReal: ArmIO {
 
     override fun setCoastMode(enabled: Boolean) {
         Logger.recordOutput("/Arm/CoastMode", enabled)
-        val config = MotorOutputConfigs().apply {
-            NeutralMode = if (enabled) {
-                NeutralModeValue.Coast
-            } else {
-                NeutralModeValue.Brake
-            }
+        val neutralModeValue = if (enabled) {
+            NeutralModeValue.Coast
+        } else {
+            NeutralModeValue.Brake
         }
-        leftMotor.configurator.apply(config)
-        rightMotor.configurator.apply(config)
+
+        leftMotor.configurator.apply(leftConfig.apply {
+            MotorOutput.apply {
+                NeutralMode = neutralModeValue
+            }
+        })
+        rightMotor.configurator.apply(rightConfig.apply {
+            MotorOutput.apply {
+                NeutralMode = neutralModeValue
+            }
+        })
     }
 
     override fun setVoltage(volts: Measure<Voltage>) {
@@ -128,52 +180,6 @@ class ArmIOReal: ArmIO {
 //        leftMotor.setControl(control)
 //        rightMotor.setControl(control)
     }
-
-    init {
-        val config = TalonFXConfiguration().apply {
-            MotorOutput.apply {
-                NeutralMode = NeutralModeValue.Brake
-            }
-
-            Feedback.apply {
-                SensorToMechanismRatio = GEAR_RATIO
-                FeedbackRotorOffset = 0.0
-            }
-
-            MotionMagic.apply {
-                MotionMagicCruiseVelocity = PROFILE_VELOCITY
-                MotionMagicAcceleration = PROFILE_ACCELERATION
-                MotionMagicJerk = PROFILE_JERK
-            }
-
-            ClosedLoopGeneral.apply {
-                ContinuousWrap = true
-            }
-        }
-
-        config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive
-        config.Slot0.apply {
-            pidGains = LEFT_PID_GAINS
-            motorFFGains = LEFT_FF_GAINS
-            GravityType = GravityTypeValue.Arm_Cosine
-            kG = LEFT_GRAVITY_GAIN
-        }
-        leftMotor.configurator.apply(
-            config
-        )
-
-        config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive
-        config.Slot0.apply {
-            pidGains = RIGHT_PID_GAINS
-            motorFFGains = RIGHT_FF_GAINS
-            GravityType = GravityTypeValue.Arm_Cosine
-            kG = RIGHT_GRAVITY_GAIN
-        }
-        rightMotor.configurator.apply(config)
-
-
-    }
-
 
     internal companion object Constants {
 //        private const val GEAR_RATIO = 125.0
@@ -197,8 +203,8 @@ class ArmIOReal: ArmIO {
         private const val PROFILE_VELOCITY = 1.0
 
 
-        val LEFT_ZERO_OFFSET = Radians.of(1.1)
-        val RIGHT_ZERO_OFFSET = Radians.of(-2.06)
+        val LEFT_ZERO_OFFSET = Radians.of(1.08)
+        val RIGHT_ZERO_OFFSET = Radians.of(-2.05)
     }
 
 }
