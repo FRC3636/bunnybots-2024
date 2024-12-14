@@ -202,8 +202,8 @@ class ArmIOReal: ArmIO {
 
     override fun zeroHere(inputs: ArmInputs) {
         armZeroed = true
-        leftZero = (inputs.leftPosition - leftZero).negate() + Degrees.of(90.0)
-        rightZero = (inputs.rightPosition - rightZero).negate() + Degrees.of(90.0)
+        leftZero = (inputs.leftPosition - leftZero).negate() - Degrees.of(90.0)
+        rightZero = (inputs.rightPosition - rightZero).negate() - Degrees.of(90.0)
         Preferences.setDouble("LeftArmZero", leftZero.`in`(Radians))
         Preferences.setDouble("RightArmZero", rightZero.`in`(Radians))
     }
