@@ -5,23 +5,18 @@ import com.frcteam3636.frc2024.subsystems.arm.Arm
 import com.frcteam3636.frc2024.subsystems.drivetrain.Drivetrain
 import com.frcteam3636.frc2024.subsystems.indexer.Indexer
 import com.frcteam3636.frc2024.subsystems.intake.Intake
-import com.frcteam3636.frc2024.utils.Elastic
-import com.frcteam3636.frc2024.utils.ElasticNotification
-import com.frcteam3636.frc2024.utils.NotificationLevel
 import com.frcteam3636.version.BUILD_DATE
 import com.frcteam3636.version.DIRTY
 import com.frcteam3636.version.GIT_BRANCH
 import com.frcteam3636.version.GIT_SHA
 import edu.wpi.first.cameraserver.CameraServer
-import edu.wpi.first.cameraserver.CameraServerSharedStore
-import edu.wpi.first.cscore.UsbCamera
 import edu.wpi.first.cscore.VideoException
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
-import edu.wpi.first.math.geometry.Translation2d
-import edu.wpi.first.units.Units
+import edu.wpi.first.math.geometry.*
 import edu.wpi.first.wpilibj.*
+import edu.wpi.first.wpilibj.DriverStation.Alliance
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
 import edu.wpi.first.wpilibj.util.WPILibVersion
 import edu.wpi.first.wpilibj2.command.Command
@@ -35,8 +30,9 @@ import org.littletonrobotics.junction.PatchedLoggedRobot
 import org.littletonrobotics.junction.networktables.NT4Publisher
 import org.littletonrobotics.junction.wpilog.WPILOGReader
 import org.littletonrobotics.junction.wpilog.WPILOGWriter
-import kotlin.io.path.Path
-import kotlin.io.path.exists
+import java.util.*
+import kotlin.jvm.optionals.getOrNull
+import kotlin.math.PI
 
 
 /**
@@ -74,9 +70,20 @@ object Robot : PatchedLoggedRobot() {
         }
     }
 
-    private var autoCommand: Command =
-        Drivetrain.driveCommand({ Translation2d(0.25, 0.0) }, { Translation2d() })
-            .withTimeout(5.0)
+    private var autoCommand: Command = Drivetrain.defer {
+            val xMagnitude = 5.6
+            val xOffset = if (DriverStation.getAlliance() == Optional.of(Alliance.Red)) {
+                xMagnitude
+            } else {
+                -xMagnitude
+            }
+
+            Drivetrain.pathfindToPose(Drivetrain.estimatedPose
+                + Transform2d(Translation2d(xOffset, 0.0), Rotation2d()))
+        }
+        .finallyDo(Runnable { Drivetrain.brake() })
+        .andThen(Intake.intake()
+            .alongWith(Indexer.outtakeBalloon()))
 
     /** Status signals used to check the health of the robot's hardware */
     val statusSignals = mutableMapOf<String, StatusSignal<*>>()
@@ -243,7 +250,12 @@ object Robot : PatchedLoggedRobot() {
 
 
     override fun autonomousInit() {
-        Drivetrain.zeroGyro()
+        Drivetrain.zeroGyro(inverted = true)
+        Drivetrain.estimatedPose = Pose2d(if (DriverStation.getAlliance() == Optional.of(Alliance.Blue)) {
+            7.0
+        } else {
+            9.0
+        }, 4.0, Drivetrain.estimatedPose.rotation)
         autoCommand.schedule()
     }
 

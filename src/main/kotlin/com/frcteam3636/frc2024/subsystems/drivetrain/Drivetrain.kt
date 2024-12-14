@@ -178,7 +178,7 @@ object Drivetrain : Subsystem, Sendable {
                 inputs.gyroRotation.toRotation2d(),
             )
         }
-        private set(value) = poseEstimator.resetPosition(
+        set(value) = poseEstimator.resetPosition(
             inputs.gyroRotation.toRotation2d(),
             inputs.measuredPositions.toTypedArray(),
             value
@@ -207,7 +207,7 @@ object Drivetrain : Subsystem, Sendable {
     private fun drive(translationInput: Translation2d, rotationInput: Translation2d) {
         if (isInDeadband(translationInput) && isInDeadband(rotationInput)) {
             // No joystick input - stop moving!
-            desiredModuleStates = BRAKE_POSITION
+            brake()
         } else {
             // Prevent even powers from removing negatives by multiplying outside of abs
             val exponentialTranslation = Translation2d(
@@ -235,13 +235,17 @@ object Drivetrain : Subsystem, Sendable {
             // Directly accessing Joystick.x/y gives inverted values - use a `Translation2d` instead.
             drive(getTranslation(), getRotation())
         }, {
-            desiredModuleStates = BRAKE_POSITION
+            brake()
         })
 
     fun driveWithOneJoystick(joystick: Joystick): Command =
         run {
             drive(joystick.translation2d, Translation2d(0.0, -joystick.z))
         }
+
+    fun brake() {
+        desiredModuleStates = BRAKE_POSITION
+    }
 
     @Suppress("unused")
     fun driveWithController(controller: CommandXboxController): Command =
@@ -286,11 +290,14 @@ object Drivetrain : Subsystem, Sendable {
         })
     }
 
-    fun zeroGyro() {
+    fun zeroGyro(inverted: Boolean = false) {
         // Tell the gyro that the robot is facing the other alliance.
-        val zeroPos = when (DriverStation.getAlliance().getOrNull()) {
+        var zeroPos = when (DriverStation.getAlliance().getOrNull()) {
             DriverStation.Alliance.Blue -> Rotation3d()
             else -> Rotation3d(0.0, 0.0, PI)
+        }
+        if (inverted) {
+            zeroPos += Rotation3d(0.0, 0.0, PI)
         }
         io.setGyro(zeroPos)
     }
