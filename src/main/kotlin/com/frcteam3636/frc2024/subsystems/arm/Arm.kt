@@ -2,11 +2,11 @@ package com.frcteam3636.frc2024.subsystems.arm
 
 import com.ctre.phoenix6.SignalLogger
 import com.frcteam3636.frc2024.Robot
+import com.frcteam3636.frc2024.utils.math.TAU
 import edu.wpi.first.units.Angle
 import edu.wpi.first.units.Measure
-import edu.wpi.first.units.Units.Degrees
-import edu.wpi.first.units.Units.Radians
-import edu.wpi.first.units.Units.Volts
+import edu.wpi.first.units.Time
+import edu.wpi.first.units.Units.*
 import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d
@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism
 import org.littletonrobotics.junction.Logger
 import kotlin.math.sin
+import kotlin.time.Duration
 
 
 private const val SECONDS_BETWEEN_ARM_UPDATES = 1.0
@@ -91,14 +92,24 @@ object Arm : Subsystem {
             io.setCoastMode(true)
         }, {
             io.setCoastMode(false)
-        })
+        })!!
 
-    fun followWave(center: Measure<Angle>, magnitude: Measure<Angle>): Command {
+    /**
+     * Follow a sine wave to test the arm's motion control.
+     *
+     * The wave begins as soon as the command is instantiated, not when the command is scheduled.
+     *
+     * @param center the angle which the wave oscillates around
+     * @param magnitude the size of the wave
+     * @param period the time before the wave returns to its original position
+     */
+    fun followWave(center: Measure<Angle>, magnitude: Measure<Angle>, period: Measure<Time> = Seconds.of(5.0)): Command {
         val timer = Timer().apply {
             start()
         }
         return runEnd({
-            val setpoint = magnitude * sin(timer.get() / 2.0) + center
+            // Use the formula for a sine wave with a magnitude, period, and center point.
+            val setpoint = magnitude * sin(timer.get() * TAU / period.`in`(Seconds)) + center
             io.pivotToPosition(setpoint)
         }, {
             io.pivotToPosition(inputs.leftPosition)
