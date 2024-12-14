@@ -15,9 +15,12 @@ import com.frcteam3636.version.GIT_SHA
 import edu.wpi.first.cameraserver.CameraServer
 import edu.wpi.first.cameraserver.CameraServerSharedStore
 import edu.wpi.first.cscore.UsbCamera
+import edu.wpi.first.cscore.VideoException
 import edu.wpi.first.hal.FRCNetComm.tInstances
 import edu.wpi.first.hal.FRCNetComm.tResourceType
 import edu.wpi.first.hal.HAL
+import edu.wpi.first.math.geometry.Translation2d
+import edu.wpi.first.units.Units
 import edu.wpi.first.wpilibj.*
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
 import edu.wpi.first.wpilibj.util.WPILibVersion
@@ -55,7 +58,25 @@ object Robot : PatchedLoggedRobot() {
     @Suppress("unused")
     private val joystickDev = Joystick(3)
 
-    private var autoCommand: Command? = null
+    /** A model of robot, depending on where we're deployed to. */
+    enum class Model {
+        SIMULATION, COMPETITION, PROTOTYPE
+    }
+
+    /** The model of this robot. */
+    val model: Model = if (RobotBase.isSimulation()) {
+        Model.SIMULATION
+    } else {
+        when (val key = Preferences.getString("Model", "competition")) {
+            "competition" -> Model.COMPETITION
+            "prototype" -> Model.PROTOTYPE
+            else -> throw AssertionError("Invalid model found in preferences: $key")
+        }
+    }
+
+    private var autoCommand: Command =
+        Drivetrain.driveCommand({ Translation2d(0.25, 0.0) }, { Translation2d() })
+            .withTimeout(5.0)
 
     /** Status signals used to check the health of the robot's hardware */
     val statusSignals = mutableMapOf<String, StatusSignal<*>>()
@@ -75,8 +96,12 @@ object Robot : PatchedLoggedRobot() {
         configureBindings()
         configureDashboard()
 
-        val camera = CameraServer.startAutomaticCapture()
-        camera.setResolution(160, 160)
+        try {
+            val camera = CameraServer.startAutomaticCapture()
+            camera.setResolution(160, 160)
+        } catch (err: VideoException) {
+            print("Failed to start driver camera")
+        }
     }
 
     /** Start logging or pull replay logs from a file */
@@ -216,34 +241,22 @@ object Robot : PatchedLoggedRobot() {
         CommandScheduler.getInstance().run()
     }
 
+
     override fun autonomousInit() {
-        autoCommand = Dashboard.autoChooser.selected
-        autoCommand?.schedule()
+        Drivetrain.zeroGyro()
+        autoCommand.schedule()
+    }
+
+    override fun autonomousExit() {
+        autoCommand.cancel()
     }
 
     override fun teleopInit() {
-        autoCommand?.cancel()
     }
 
     override fun testInit() {
     }
 
     override fun testExit() {
-    }
-
-    /** A model of robot, depending on where we're deployed to. */
-    enum class Model {
-        SIMULATION, COMPETITION, PROTOTYPE
-    }
-
-    /** The model of this robot. */
-    val model: Model = if (RobotBase.isSimulation()) {
-        Model.SIMULATION
-    } else {
-        when (val key = Preferences.getString("Model", "competition")) {
-            "competition" -> Model.COMPETITION
-            "prototype" -> Model.PROTOTYPE
-            else -> throw AssertionError("Invalid model found in preferences: $key")
-        }
     }
 }

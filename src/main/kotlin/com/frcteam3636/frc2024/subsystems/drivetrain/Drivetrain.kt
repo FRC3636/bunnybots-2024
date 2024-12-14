@@ -31,7 +31,9 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.math.util.Units
+import edu.wpi.first.units.Measure
 import edu.wpi.first.units.Units.*
+import edu.wpi.first.units.Velocity
 import edu.wpi.first.util.sendable.Sendable
 import edu.wpi.first.util.sendable.SendableBuilder
 import edu.wpi.first.wpilibj.DriverStation
@@ -227,6 +229,14 @@ object Drivetrain : Subsystem, Sendable {
             // Directly accessing Joystick.x/y gives inverted values - use a `Translation2d` instead.
             drive(translationJoystick.translation2d, rotationJoystick.translation2d)
         }
+
+    fun driveCommand(getTranslation: () -> Translation2d, getRotation: () -> Translation2d): Command =
+        runEnd({
+            // Directly accessing Joystick.x/y gives inverted values - use a `Translation2d` instead.
+            drive(getTranslation(), getRotation())
+        }, {
+            desiredModuleStates = BRAKE_POSITION
+        })
 
     fun driveWithOneJoystick(joystick: Joystick): Command =
         run {
