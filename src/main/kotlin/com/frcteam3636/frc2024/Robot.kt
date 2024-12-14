@@ -76,7 +76,7 @@ object Robot : PatchedLoggedRobot() {
         configureDashboard()
 
         val camera = CameraServer.startAutomaticCapture()
-        camera.setResolution(240, 240)
+        camera.setResolution(160, 160)
     }
 
     /** Start logging or pull replay logs from a file */
