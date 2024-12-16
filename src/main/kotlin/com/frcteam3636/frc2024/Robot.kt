@@ -70,6 +70,9 @@ object Robot : PatchedLoggedRobot() {
         }
     }
 
+    /** Status signals used to check the health of the robot's hardware */
+    val statusSignals = mutableMapOf<String, StatusSignal<*>>()
+
     private var autoCommand: Command = Drivetrain.defer {
             val xMagnitude = 5.6
             val xOffset = if (DriverStation.getAlliance() == Optional.of(Alliance.Red)) {
@@ -84,9 +87,6 @@ object Robot : PatchedLoggedRobot() {
         .finallyDo(Runnable { Drivetrain.brake() })
         .andThen(Intake.intake()
             .alongWith(Indexer.outtakeBalloon()))
-
-    /** Status signals used to check the health of the robot's hardware */
-    val statusSignals = mutableMapOf<String, StatusSignal<*>>()
 
     override fun robotInit() {
         // Report the use of the Kotlin Language for "FRC Usage Report" statistics
