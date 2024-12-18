@@ -18,6 +18,7 @@ import edu.wpi.first.math.geometry.*
 import edu.wpi.first.wpilibj.*
 import edu.wpi.first.wpilibj.DriverStation.Alliance
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser
 import edu.wpi.first.wpilibj.util.WPILibVersion
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
@@ -31,8 +32,6 @@ import org.littletonrobotics.junction.networktables.NT4Publisher
 import org.littletonrobotics.junction.wpilog.WPILOGReader
 import org.littletonrobotics.junction.wpilog.WPILOGWriter
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
-import kotlin.math.PI
 
 
 /**
@@ -73,20 +72,7 @@ object Robot : PatchedLoggedRobot() {
     /** Status signals used to check the health of the robot's hardware */
     val statusSignals = mutableMapOf<String, StatusSignal<*>>()
 
-    private var autoCommand: Command = Drivetrain.defer {
-            val xMagnitude = 5.6
-            val xOffset = if (DriverStation.getAlliance() == Optional.of(Alliance.Red)) {
-                xMagnitude
-            } else {
-                -xMagnitude
-            }
-
-            Drivetrain.pathfindToPose(Drivetrain.estimatedPose
-                + Transform2d(Translation2d(xOffset, 0.0), Rotation2d()))
-        }
-        .finallyDo(Runnable { Drivetrain.brake() })
-        .andThen(Intake.intake()
-            .alongWith(Indexer.outtakeBalloon()))
+    private var autoCommand: Command? = null
 
     override fun robotInit() {
         // Report the use of the Kotlin Language for "FRC Usage Report" statistics
@@ -250,17 +236,12 @@ object Robot : PatchedLoggedRobot() {
 
 
     override fun autonomousInit() {
-        Drivetrain.zeroGyro(inverted = true)
-        Drivetrain.estimatedPose = Pose2d(if (DriverStation.getAlliance() == Optional.of(Alliance.Blue)) {
-            7.0
-        } else {
-            9.0
-        }, 4.0, Drivetrain.estimatedPose.rotation)
-        autoCommand.schedule()
+        autoCommand = Dashboard.autoChooser.selected
+        autoCommand?.schedule()
     }
 
     override fun autonomousExit() {
-        autoCommand.cancel()
+        autoCommand?.cancel()
     }
 
     override fun teleopInit() {
